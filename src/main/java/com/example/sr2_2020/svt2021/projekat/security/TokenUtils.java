@@ -27,7 +27,7 @@ public class TokenUtils {
 
         try {
 
-            Claims claims = this.getClaimsFromToken(token); // username izvlacimo iz subject polja unutar payload tokena
+            Claims claims = this.getClaimsFromToken(token);
 
             username = claims.getSubject();
 

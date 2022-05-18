@@ -47,13 +47,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User login(LoginRequest loginRequest) {
-
-
-        return new User();
-    }
-
-    @Override
     public User findByUsername(String username) {
 
         return null;

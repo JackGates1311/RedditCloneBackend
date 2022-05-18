@@ -12,8 +12,5 @@ public interface UserService {
     @Transactional
     public void register(RegisterRequest registerRequest);
 
-    @Transactional
-    public User login(LoginRequest loginRequest);
-
     public User findByUsername(String username);
 }

@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/auth/")
 public class UserController {
 
     @Autowired
@@ -45,7 +45,7 @@ public class UserController {
 
     }
 
-    @RequestMapping(value="login", method = RequestMethod.POST)
+    @RequestMapping(value="/login", method = RequestMethod.POST)
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
 
         Authentication authenticateUser = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(

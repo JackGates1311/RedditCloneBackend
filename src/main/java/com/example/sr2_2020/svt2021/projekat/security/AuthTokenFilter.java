@@ -42,7 +42,9 @@ public class AuthTokenFilter extends UsernamePasswordAuthenticationFilter {
         String username = tokenUtils.getUsernameFromToken(token);
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+
             if (tokenUtils.validateToken(token, userDetails)) {
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities()
@@ -52,8 +54,8 @@ public class AuthTokenFilter extends UsernamePasswordAuthenticationFilter {
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
         }
-        chain.doFilter(request, response);
 
+        chain.doFilter(request, response);
 
     }
 
