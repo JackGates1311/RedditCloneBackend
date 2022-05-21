@@ -13,4 +13,5 @@ public interface CommunityService {
     @Transactional
     public List<CommunityDTO> getAllCommunities();
 
+    public CommunityDTO getCommunity(Long id);
 }

@@ -7,21 +7,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/community")
+@RequestMapping("/api/communities")
 @AllArgsConstructor
 @Slf4j
 public class CommunityController {
 
     @Autowired
-
     private CommunityService communityService;
 
     @RequestMapping(value= "/createCommunity", method = RequestMethod.POST)
@@ -34,6 +30,12 @@ public class CommunityController {
     public ResponseEntity<List<CommunityDTO>> getAllCommunities() {
 
         return ResponseEntity.status(HttpStatus.OK).body(communityService.getAllCommunities());
+    }
+
+    @RequestMapping("/{id}")
+    public ResponseEntity<CommunityDTO> getCommunity(@PathVariable Long id) {
+
+        return ResponseEntity.status(HttpStatus.OK).body(communityService.getCommunity(id));
     }
 
 

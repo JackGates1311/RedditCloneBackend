@@ -19,22 +19,33 @@ import static javax.persistence.FetchType.LAZY;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Post {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long postId;
 
-    @NotBlank(message = "Post Title cannot be empty")
-    private String title;
+    @NotBlank(message = "Community name cannot be empty")
+    private String communityName;
+
+    private LocalDateTime creationDate;
 
     private String imagePath;
 
     @NotBlank(message = "Post text cannot be empty")
     private String text;
 
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "userId", referencedColumnName = "userId")
+    @NotBlank(message = "Post Title cannot be empty")
+    private String title;
+
+    @NotBlank(message = "Community name cannot be empty")
+    private String username;
+
+    /*@ManyToOne(fetch = LAZY)
     private User user;
-    private LocalDateTime creationDate;
+
+    @ManyToOne(fetch = LAZY)
+    private Community community;*/
+
 
 
 

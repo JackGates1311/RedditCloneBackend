@@ -28,6 +28,7 @@ public class AuthTokenFilter extends UsernamePasswordAuthenticationFilter {
             ServletException {
 
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+
         String token = httpServletRequest.getHeader("Authorization");
 
         if(token != null) {

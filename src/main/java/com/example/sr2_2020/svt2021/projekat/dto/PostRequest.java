@@ -1,7 +1,7 @@
 package com.example.sr2_2020.svt2021.projekat.dto;
 
+import com.example.sr2_2020.svt2021.projekat.model.User;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,18 +10,14 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class CommunityDTO {
+public class PostRequest {
 
-    private Long communityId;
-    private String name;
-    private String description;
+    private Long postId;
     private LocalDateTime creationDate;
-    private Boolean isSuspended;
-    private String suspendedReason;
-
-    ////
-    private int numberOfPosts;
-
+    private String communityName;
+    private String imagePath;
+    private String text;
+    private String title;
+   // private String username;
 
 }

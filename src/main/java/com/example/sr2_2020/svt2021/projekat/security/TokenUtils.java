@@ -1,16 +1,18 @@
 package com.example.sr2_2020.svt2021.projekat.security;
 
+import com.sun.net.httpserver.HttpContext;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class TokenUtils {
@@ -23,24 +25,20 @@ public class TokenUtils {
 
     public String getUsernameFromToken(String token) {
 
-        String username;
-
         try {
 
-            Claims claims = this.getClaimsFromToken(token);
+            Map<String, Object> claimsList = new HashMap<>(this.getClaimsFromToken(token));
 
-            username = claims.getSubject();
+            return claimsList.get("username").toString();
 
         } catch (Exception e) {
 
-            username = null;
+            return null;
 
         }
-
-        return username;
     }
 
-    private Claims getClaimsFromToken(String token) {
+    public Claims getClaimsFromToken(String token) {
 
         Claims claims;
 
@@ -102,6 +100,17 @@ public class TokenUtils {
     public int getExpiredIn() {
 
         return expiration.intValue();
+    }
+
+    public String getToken( HttpServletRequest request ) {
+
+        String authHeader = request.getHeader("Authorization");
+
+        if ( authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+
+        return null;
     }
 
 }
