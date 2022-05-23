@@ -9,13 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+public class ChangePasswordRequest {
 
-public class RegisterRequest {
-
-    private String username;
-    private String password;
-    private String email;
-    private String avatar;
-    private String description;
-    private String displayName;
+    private String oldPassword;
+    private String newPassword;
 }

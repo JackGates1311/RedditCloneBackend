@@ -1,6 +1,7 @@
 package com.example.sr2_2020.svt2021.projekat.controller;
 
 import com.example.sr2_2020.svt2021.projekat.dto.AuthResponse;
+import com.example.sr2_2020.svt2021.projekat.dto.ChangePasswordRequest;
 import com.example.sr2_2020.svt2021.projekat.dto.LoginRequest;
 import com.example.sr2_2020.svt2021.projekat.dto.RegisterRequest;
 import com.example.sr2_2020.svt2021.projekat.model.User;
@@ -18,6 +19,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @RestController
@@ -60,6 +62,14 @@ public class UserController {
         int expiresIn = tokenUtils.getExpiredIn();
 
         return ResponseEntity.ok(new AuthResponse(jwtToken, expiresIn));
+
+    }
+
+    @RequestMapping(value = "/changePassword", method = RequestMethod.PUT)
+    public ResponseEntity<ChangePasswordRequest> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest,
+                                                          HttpServletRequest request) {
+
+        return userService.changePassword(changePasswordRequest, request);
 
     }
 

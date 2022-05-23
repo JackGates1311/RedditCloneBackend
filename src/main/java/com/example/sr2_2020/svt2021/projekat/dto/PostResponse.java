@@ -1,7 +1,9 @@
 package com.example.sr2_2020.svt2021.projekat.dto;
 
+import com.example.sr2_2020.svt2021.projekat.model.Community;
 import com.example.sr2_2020.svt2021.projekat.model.User;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

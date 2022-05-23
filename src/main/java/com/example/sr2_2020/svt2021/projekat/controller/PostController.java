@@ -2,6 +2,7 @@ package com.example.sr2_2020.svt2021.projekat.controller;
 
 import com.example.sr2_2020.svt2021.projekat.dto.PostRequest;
 import com.example.sr2_2020.svt2021.projekat.dto.PostResponse;
+import com.example.sr2_2020.svt2021.projekat.repository.PostRepository;
 import com.example.sr2_2020.svt2021.projekat.service.PostService;
 import lombok.AllArgsConstructor;
 import org.apache.catalina.LifecycleState;
@@ -15,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import java.util.List;
 
+import static com.fasterxml.jackson.databind.type.LogicalType.Map;
 import static org.springframework.web.servlet.function.ServerResponse.status;
 
 @RestController
@@ -44,5 +46,20 @@ public class PostController {
 
         return new ResponseEntity(postService.getPost(id), HttpStatus.OK);
     }
+
+    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    public ResponseEntity<PostRequest> editPost(@RequestBody PostRequest postRequest, @PathVariable Long id,
+            HttpServletRequest request) {
+
+        return postService.editPost(postRequest, id, request);
+    }
+
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<?> deletePost(@PathVariable Long id) {
+
+        return postService.deleteById(id);
+    }
+
+    //TODO implement getPostsByCommunityMethod (String communityId) and getPostsByUsername(String username)
 
 }

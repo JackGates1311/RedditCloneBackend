@@ -9,6 +9,8 @@ import com.example.sr2_2020.svt2021.projekat.service.CommunityService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,6 +32,8 @@ public class CommunityServiceImpl implements CommunityService {
     public CommunityDTO createCommunity(CommunityDTO communityDTO) {
 
         Community newCommunity = communityRepository.save(communityMapper.mapDTOToCommunity(communityDTO));
+
+        //TODO Fix code below (low priority for now)
 
         newCommunity.setCommunityId(newCommunity.getCommunityId());
         newCommunity.setCreationDate(newCommunity.getCreationDate());
@@ -55,6 +59,26 @@ public class CommunityServiceImpl implements CommunityService {
                 orElseThrow(() -> new SpringRedditCloneException("Community not found with entered ID"));
 
         return communityMapper.mapCommunityToDTO(community);
+    }
+
+    @Override
+    public ResponseEntity<CommunityDTO> editCommunity(CommunityDTO communityDTO, Long communityId) {
+
+        Community community = communityMapper.mapDTOToCommunity(communityDTO);
+
+        community.setCommunityId(communityId);
+
+        communityRepository.save(community);
+
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(communityDTO);
+    }
+
+    @Override
+    public ResponseEntity<?> deleteById(Long id) {
+
+        communityRepository.deleteById(id);
+
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
     /* private CommunityDTO mapToDTO(Community community) {

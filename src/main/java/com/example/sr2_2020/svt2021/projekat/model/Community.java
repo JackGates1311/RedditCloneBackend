@@ -10,6 +10,8 @@ import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static javax.persistence.FetchType.LAZY;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -26,10 +28,14 @@ public class Community {
     @NotBlank(message = "Community description is required")
     private String description;
 
-    private Boolean isSuspended;
+    private Boolean isSuspended = false;
 
     @NotBlank(message = "Community name is required")
+    @Column(unique=true)
     private String name;
+
+    @OneToMany(fetch = LAZY)
+    private List<Post> posts;
 
     private String suspendedReason;
 

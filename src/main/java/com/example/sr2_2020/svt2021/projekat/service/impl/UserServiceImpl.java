@@ -1,20 +1,29 @@
 package com.example.sr2_2020.svt2021.projekat.service.impl;
 
+import com.example.sr2_2020.svt2021.projekat.dto.ChangePasswordRequest;
 import com.example.sr2_2020.svt2021.projekat.dto.RegisterRequest;
+import com.example.sr2_2020.svt2021.projekat.mapper.UserMapper;
 import com.example.sr2_2020.svt2021.projekat.model.User;
 import com.example.sr2_2020.svt2021.projekat.repository.UserRepository;
-import com.example.sr2_2020.svt2021.projekat.security.AuthTokenFilter;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.UserService;
-import io.jsonwebtoken.Jwt;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -24,8 +33,13 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
 
+    private final UserMapper userMapper;
+
     @Autowired
     TokenUtils tokenUtils;
+
+    @Autowired
+    AuthenticationManager authenticationManager;
 
     @Override
     public void register(RegisterRequest registerRequest) {
@@ -48,6 +62,47 @@ public class UserServiceImpl implements UserService {
     public User findByUsername(String username) {
 
         return null;
+    }
+
+    @Override
+    public ResponseEntity<ChangePasswordRequest> changePassword(ChangePasswordRequest changePasswordRequest,
+                                                                HttpServletRequest request) {
+
+        String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
+
+
+        Optional<User> userFound = userRepository.findByUsername(username);
+
+        User user = userFound.orElseThrow(
+                () -> new UsernameNotFoundException("User with entered username (" + username + ")  doesn't exists"));
+
+        /// REFACTOR IT///
+
+        Authentication authenticateUser = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                username, changePasswordRequest.getOldPassword()));
+
+        SecurityContextHolder.getContext().setAuthentication(authenticateUser);
+
+        UserDetails userDetails = (UserDetails) authenticateUser.getPrincipal();
+
+        String jwtToken = tokenUtils.generateToken(userDetails);
+
+        /// DUPLICATE CODE /////
+
+        if(!changePasswordRequest.getOldPassword().equals(changePasswordRequest.getNewPassword()) &&
+                jwtToken != null) {
+
+            user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
+
+            userRepository.save(user);
+
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(changePasswordRequest);
+
+        } else {
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(changePasswordRequest);
+        }
+
     }
 
 }

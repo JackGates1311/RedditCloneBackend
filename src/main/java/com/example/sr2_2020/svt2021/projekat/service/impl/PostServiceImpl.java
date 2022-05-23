@@ -2,6 +2,7 @@ package com.example.sr2_2020.svt2021.projekat.service.impl;
 
 import com.example.sr2_2020.svt2021.projekat.dto.PostRequest;
 import com.example.sr2_2020.svt2021.projekat.dto.PostResponse;
+import com.example.sr2_2020.svt2021.projekat.exception.CommunityNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.PostNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.mapper.PostMapper;
 import com.example.sr2_2020.svt2021.projekat.model.Community;
@@ -15,6 +16,8 @@ import com.example.sr2_2020.svt2021.projekat.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.*;
@@ -49,9 +52,13 @@ public class PostServiceImpl implements PostService {
     @Override
     public void save(PostRequest postRequest, HttpServletRequest request) {
 
+        Community community = communityRepository.findByName(postRequest.getCommunityName()).
+                orElseThrow(() -> new CommunityNotFoundException("Community with name " + postRequest.getCommunityName()
+                        + " not found"));
+
         String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
 
-        postRepository.save(postMapper.map(postRequest, username));
+        postRepository.save(postMapper.map(postRequest, community, username));
 
     }
 
@@ -67,5 +74,31 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(id).orElseThrow(() -> new PostNotFoundException(id.toString()));
 
         return postMapper.mapToDTO(post);
+    }
+
+    @Override
+    public ResponseEntity<PostRequest> editPost(PostRequest postRequest, Long id, HttpServletRequest request) {
+
+        Community community = communityRepository.findByName(postRequest.getCommunityName()).
+                orElseThrow(() -> new CommunityNotFoundException("Community with name " + postRequest.getCommunityName()
+                        + " not found"));
+
+        String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
+
+        Post post = postMapper.map(postRequest, community, username);
+
+        post.setPostId(id);
+
+        postRepository.save(post);
+
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(postRequest);
+    }
+
+    @Override
+    public ResponseEntity<?> deleteById(Long id) {
+
+        postRepository.deleteById(id);
+
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 }

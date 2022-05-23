@@ -1,6 +1,9 @@
 package com.example.sr2_2020.svt2021.projekat.controller;
 
 import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTO;
+import com.example.sr2_2020.svt2021.projekat.mapper.CommunityMapper;
+import com.example.sr2_2020.svt2021.projekat.model.Community;
+import com.example.sr2_2020.svt2021.projekat.repository.CommunityRepository;
 import com.example.sr2_2020.svt2021.projekat.service.CommunityService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +41,16 @@ public class CommunityController {
         return ResponseEntity.status(HttpStatus.OK).body(communityService.getCommunity(id));
     }
 
+    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    public ResponseEntity<CommunityDTO> editCommunity(@RequestBody CommunityDTO communityDTO, @PathVariable Long id) {
 
+        return communityService.editCommunity(communityDTO, id);
+    }
 
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<?> deleteCommunity(@PathVariable Long id) {
 
+       return communityService.deleteById(id);
+
+    }
 }

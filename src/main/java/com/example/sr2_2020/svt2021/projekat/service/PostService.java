@@ -2,6 +2,7 @@ package com.example.sr2_2020.svt2021.projekat.service;
 
 import com.example.sr2_2020.svt2021.projekat.dto.PostRequest;
 import com.example.sr2_2020.svt2021.projekat.dto.PostResponse;
+import org.springframework.http.ResponseEntity;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -22,4 +23,10 @@ public interface PostService {
 
     @Transactional
     public PostResponse getPost(Long id);
+
+    @Transactional
+    public ResponseEntity<PostRequest> editPost(PostRequest postRequest, Long id, HttpServletRequest request);
+
+    @Transactional
+    public ResponseEntity<?> deleteById(Long id);
 }

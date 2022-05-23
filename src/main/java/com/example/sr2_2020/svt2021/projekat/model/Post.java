@@ -1,6 +1,7 @@
 package com.example.sr2_2020.svt2021.projekat.model;
 
 
+import io.micrometer.core.lang.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +12,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
+import static javax.persistence.FetchType.EAGER;
 import static javax.persistence.FetchType.LAZY;
 
 @Data
@@ -24,9 +26,6 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long postId;
 
-    @NotBlank(message = "Community name cannot be empty")
-    private String communityName;
-
     private LocalDateTime creationDate;
 
     private String imagePath;
@@ -37,8 +36,12 @@ public class Post {
     @NotBlank(message = "Post Title cannot be empty")
     private String title;
 
-    @NotBlank(message = "Community name cannot be empty")
+    @NotBlank(message = "Username cannot be empty")
     private String username;
+
+    @ManyToOne(fetch = EAGER)
+    @JoinColumn(name = "communityId", referencedColumnName = "communityId")
+    private Community community;
 
     /*@ManyToOne(fetch = LAZY)
     private User user;
