@@ -22,17 +22,13 @@ public class PostMapperImpl extends PostMapper {
 
         PostBuilder post = Post.builder();
 
-        if(postRequest != null) {
-
-            post.postId(postRequest.getPostId());
-            //post.communityId(postRequest.getCommunityId());
-            post.creationDate(LocalDateTime.now());
-            post.imagePath("");
-            post.text(postRequest.getText());
-            post.title(postRequest.getTitle());
-            post.username(username);
-
-        }
+        post.postId(postRequest.getPostId());
+        //post.communityId(postRequest.getCommunityId());
+        post.creationDate(LocalDateTime.now());
+        post.imagePath("");
+        post.text(postRequest.getText());
+        post.title(postRequest.getTitle());
+        post.username(username);
 
         if(community != null) {
 
