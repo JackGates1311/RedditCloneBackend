@@ -26,7 +26,9 @@ public class CommunityController {
     @RequestMapping(value= "/createCommunity", method = RequestMethod.POST)
     public ResponseEntity<CommunityDTO> createCommunity(@RequestBody CommunityDTO communityDTO) {
 
-       return ResponseEntity.status(HttpStatus.CREATED).body(communityService.createCommunity(communityDTO));
+        communityService.createCommunity(communityDTO);
+
+        return new ResponseEntity("Community is successfully created", HttpStatus.CREATED);
     }
 
     @RequestMapping("/getAllCommunities")

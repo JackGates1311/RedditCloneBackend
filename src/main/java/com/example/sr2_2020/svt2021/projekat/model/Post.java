@@ -1,6 +1,7 @@
 package com.example.sr2_2020.svt2021.projekat.model;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.micrometer.core.lang.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

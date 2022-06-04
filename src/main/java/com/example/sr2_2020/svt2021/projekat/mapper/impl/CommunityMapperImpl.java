@@ -26,7 +26,7 @@ public class CommunityMapperImpl implements CommunityMapper {
         communityDTO.communityId(community.getCommunityId());
         communityDTO.name(community.getName());
         communityDTO.description(community.getDescription());
-        communityDTO.creationDate(LocalDateTime.now());
+        communityDTO.creationDate(LocalDateTime.now().toString());
         communityDTO.isSuspended(community.getIsSuspended());
         communityDTO.suspendedReason(community.getSuspendedReason());
 

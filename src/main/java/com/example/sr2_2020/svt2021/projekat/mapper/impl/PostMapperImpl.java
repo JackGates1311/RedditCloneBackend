@@ -48,7 +48,7 @@ public class PostMapperImpl extends PostMapper {
         PostResponse postResponse = new PostResponse();
 
         postResponse.setPostId(post.getPostId());
-        postResponse.setCreationDate(post.getCreationDate());
+        postResponse.setCreationDate(post.getCreationDate().toString());
         postResponse.setImagePath(post.getImagePath());
         postResponse.setText(post.getText());
         postResponse.setTitle(post.getTitle());

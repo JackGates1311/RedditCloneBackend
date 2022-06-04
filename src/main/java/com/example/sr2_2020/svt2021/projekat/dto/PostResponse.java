@@ -16,7 +16,7 @@ public class PostResponse {
 
     private Long postId;
     private String communityName;
-    private LocalDateTime creationDate;
+    private String creationDate;
     private String imagePath;
     private String text;
     private String title;

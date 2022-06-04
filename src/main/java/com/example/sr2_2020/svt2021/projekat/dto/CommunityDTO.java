@@ -16,7 +16,7 @@ public class CommunityDTO {
     private Long communityId;
     private String name;
     private String description;
-    private LocalDateTime creationDate;
+    private String creationDate;
     private Boolean isSuspended;
     private String suspendedReason;
 
