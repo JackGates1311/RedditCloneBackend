@@ -25,6 +25,8 @@ public class Community {
 
     private LocalDateTime creationDate;
 
+    @Lob
+    @Column(length = 65535)
     @NotBlank(message = "Community description is required")
     private String description;
 

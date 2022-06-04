@@ -68,7 +68,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter { // FIX CLASS
 
         httpSecurity.headers().frameOptions().disable();
 
-        // In line below, we can exclude some requests from auth (enable entered links for guest)
+        // In line below, we can exclude some requests from auth (enables entered links for guest)
 
         httpSecurity.csrf().disable().authorizeHttpRequests().
                 antMatchers("/api/auth/**", "/api/posts/getAllPosts").

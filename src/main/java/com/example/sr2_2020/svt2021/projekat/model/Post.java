@@ -30,10 +30,12 @@ public class Post {
 
     private String imagePath;
 
+    @Lob
+    @Column(length = 65535)
     @NotBlank(message = "Post text cannot be empty")
     private String text;
 
-    @NotBlank(message = "Post Title cannot be empty")
+    @NotBlank(message = "Post title cannot be empty")
     private String title;
 
     @NotBlank(message = "Username cannot be empty")

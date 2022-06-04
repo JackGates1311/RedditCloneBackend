@@ -37,6 +37,8 @@ public class User {
 
     private LocalDateTime registrationDate;
 
+    @Lob
+    @Column(length = 65535)
     @NotBlank(message = "Description is required")
     private String description;
 

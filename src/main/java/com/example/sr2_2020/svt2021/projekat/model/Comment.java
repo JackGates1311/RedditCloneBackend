@@ -22,6 +22,8 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long commentId;
 
+    @Lob
+    @Column(length = 65535)
     @NotEmpty
     private String text;
 
