@@ -37,10 +37,16 @@ public class CommunityController {
         return ResponseEntity.status(HttpStatus.OK).body(communityService.getAllCommunities());
     }
 
-    @RequestMapping("/{id}")
+    @RequestMapping("/id={id}")
     public ResponseEntity<CommunityDTO> getCommunity(@PathVariable Long id) {
 
         return ResponseEntity.status(HttpStatus.OK).body(communityService.getCommunity(id));
+    }
+
+    @RequestMapping("/name={name}")
+    public ResponseEntity<CommunityDTO> getCommunityByName(@PathVariable String name) {
+
+        return ResponseEntity.status(HttpStatus.OK).body(communityService.getCommunityByName(name));
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)

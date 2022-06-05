@@ -1,9 +1,11 @@
 package com.example.sr2_2020.svt2021.projekat.service.impl;
 
+import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTO;
 import com.example.sr2_2020.svt2021.projekat.dto.PostRequest;
 import com.example.sr2_2020.svt2021.projekat.dto.PostResponse;
 import com.example.sr2_2020.svt2021.projekat.exception.CommunityNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.PostNotFoundException;
+import com.example.sr2_2020.svt2021.projekat.mapper.CommunityMapper;
 import com.example.sr2_2020.svt2021.projekat.mapper.PostMapper;
 import com.example.sr2_2020.svt2021.projekat.model.Community;
 import com.example.sr2_2020.svt2021.projekat.model.Post;
@@ -11,6 +13,7 @@ import com.example.sr2_2020.svt2021.projekat.repository.CommunityRepository;
 import com.example.sr2_2020.svt2021.projekat.repository.PostRepository;
 import com.example.sr2_2020.svt2021.projekat.security.AuthTokenFilter;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
+import com.example.sr2_2020.svt2021.projekat.service.CommunityService;
 import com.example.sr2_2020.svt2021.projekat.service.PostService;
 import com.example.sr2_2020.svt2021.projekat.service.UserService;
 import lombok.AllArgsConstructor;
@@ -47,7 +50,13 @@ public class PostServiceImpl implements PostService {
     TokenUtils tokenUtils;
 
     @Autowired
+    CommunityMapper communityMapper;
+
+    @Autowired
     PostMapper postMapper;
+
+    @Autowired
+    CommunityService communityService;
 
     @Override
     public void save(PostRequest postRequest, HttpServletRequest request) {
@@ -100,5 +109,16 @@ public class PostServiceImpl implements PostService {
         postRepository.deleteById(id);
 
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+    }
+
+    @Override
+    public List<PostResponse> getPostsByCommunityName(String communityName) {
+
+        CommunityDTO communityDTO = communityService.getCommunityByName(communityName);
+
+        Community community = communityMapper.mapDTOToCommunity(communityDTO);
+
+        return postRepository.findPostsByCommunity(community).stream().map(postMapper::mapToDTO).
+                collect(Collectors.toList());
     }
 }

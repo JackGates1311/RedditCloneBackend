@@ -60,6 +60,12 @@ public class PostController {
         return postService.deleteById(id);
     }
 
+    @RequestMapping("/communityName={communityName}")
+    public ResponseEntity<List<PostResponse>> getCommunityPosts(@PathVariable String communityName) {
+
+        return new ResponseEntity(postService.getPostsByCommunityName(communityName), HttpStatus.OK);
+    }
+
     //TODO implement getPostsByCommunityMethod (String communityId) and getPostsByUsername(String username)
 
 }

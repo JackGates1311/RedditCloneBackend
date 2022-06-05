@@ -29,4 +29,7 @@ public interface PostService {
 
     @Transactional
     public ResponseEntity<?> deleteById(Long id);
+
+    @Transactional
+    public List<PostResponse> getPostsByCommunityName(String communityName);
 }

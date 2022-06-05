@@ -81,6 +81,15 @@ public class CommunityServiceImpl implements CommunityService {
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
+    @Override
+    public CommunityDTO getCommunityByName(String name) {
+
+        Community community = communityRepository.findByName(name).
+                orElseThrow(() -> new SpringRedditCloneException("Community not found with entered name"));
+
+        return communityMapper.mapCommunityToDTO(community);
+    }
+
     /* private CommunityDTO mapToDTO(Community community) {
 
         return CommunityDTO.builder().communityId(community.getCommunityId()).name(community.getName())

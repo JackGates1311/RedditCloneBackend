@@ -22,4 +22,7 @@ public interface CommunityService {
 
     @Transactional
     public ResponseEntity<?> deleteById(Long id);
+
+    @Transactional
+    public CommunityDTO getCommunityByName(String name);
 }

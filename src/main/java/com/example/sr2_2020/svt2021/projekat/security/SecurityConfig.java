@@ -71,7 +71,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter { // FIX CLASS
         // In line below, we can exclude some requests from auth (enables entered links for guest)
 
         httpSecurity.csrf().disable().authorizeHttpRequests().
-                antMatchers("/api/auth/**", "/api/posts/getAllPosts").
+                antMatchers("/api/auth/**", "/api/posts/getAllPosts", "/api/communities/name={name}",
+                        "api/posts/communityName={communityName}").
                 permitAll().anyRequest().authenticated();
 
         httpSecurity.addFilterBefore(authTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
