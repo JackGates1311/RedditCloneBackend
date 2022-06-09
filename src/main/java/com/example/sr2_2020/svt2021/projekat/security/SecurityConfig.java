@@ -72,8 +72,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter { // FIX CLASS
 
         httpSecurity.csrf().disable().authorizeHttpRequests().
                 antMatchers("/api/auth/**", "/api/posts/getAllPosts", "/api/communities/name={name}",
-                        "api/posts/communityName={communityName}").
-                permitAll().anyRequest().authenticated();
+                        "/api/posts/communityName={communityName}", "/api/communities/getAllCommunities",
+                        "/api/posts/{id}").permitAll().anyRequest().authenticated();
 
         httpSecurity.addFilterBefore(authTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
     }

@@ -11,6 +11,7 @@ import com.example.sr2_2020.svt2021.projekat.model.Community;
 import com.example.sr2_2020.svt2021.projekat.model.Post;
 import com.example.sr2_2020.svt2021.projekat.repository.CommunityRepository;
 import com.example.sr2_2020.svt2021.projekat.repository.PostRepository;
+import com.example.sr2_2020.svt2021.projekat.repository.ReactionRepository;
 import com.example.sr2_2020.svt2021.projekat.security.AuthTokenFilter;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.CommunityService;
@@ -57,6 +58,9 @@ public class PostServiceImpl implements PostService {
 
     @Autowired
     CommunityService communityService;
+
+    @Autowired
+    ReactionRepository reactionRepository;
 
     @Override
     public void save(PostRequest postRequest, HttpServletRequest request) {
@@ -105,6 +109,8 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public ResponseEntity<?> deleteById(Long id) {
+
+        reactionRepository.deleteByPostPostId(id);
 
         postRepository.deleteById(id);
 

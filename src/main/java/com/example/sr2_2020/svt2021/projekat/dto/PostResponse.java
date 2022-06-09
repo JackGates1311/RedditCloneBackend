@@ -21,5 +21,6 @@ public class PostResponse {
     private String text;
     private String title;
     private String username;
+    private Integer reactionCount;
 
 }

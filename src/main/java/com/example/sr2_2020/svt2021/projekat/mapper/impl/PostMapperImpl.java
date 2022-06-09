@@ -29,6 +29,7 @@ public class PostMapperImpl extends PostMapper {
         post.text(postRequest.getText());
         post.title(postRequest.getTitle());
         post.username(username);
+        post.reactionCount(0);
 
         if(community != null) {
 
@@ -53,6 +54,7 @@ public class PostMapperImpl extends PostMapper {
         postResponse.setText(post.getText());
         postResponse.setTitle(post.getTitle());
         postResponse.setUsername(post.getUsername());
+        postResponse.setReactionCount(post.getReactionCount());
 
         postResponse.setCommunityName(postCommunityName(post));
 
