@@ -98,7 +98,11 @@ public class PostServiceImpl implements PostService {
 
         String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
 
+        Post getPostForEdit = postRepository.findById(id).orElseThrow(() -> new PostNotFoundException(id.toString()));
+
         Post post = postMapper.map(postRequest, community, username);
+
+        post.setReactionCount(getPostForEdit.getReactionCount());
 
         post.setPostId(id);
 

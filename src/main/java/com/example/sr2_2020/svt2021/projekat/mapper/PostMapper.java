@@ -23,6 +23,8 @@ public abstract class PostMapper {
     @Mapping(target = "imagePath", source = "imagePath")
     @Mapping(target = "username", source = "username")
 
+    @Mapping(target = "reactionCount", source = "reactionCount")
+
    // @Mapping(target = "community", source = "community")
     //@Mapping(target = "user", source = "user")
 

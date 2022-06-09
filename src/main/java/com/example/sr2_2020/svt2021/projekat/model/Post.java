@@ -46,7 +46,7 @@ public class Post {
     @JoinColumn(name = "communityId", referencedColumnName = "communityId")
     private Community community;
 
-    private Integer reactionCount = 0; //TODO Pitaj asistenta da li sme ovako?!
+    private Integer reactionCount; //TODO Pitaj asistenta da li sme ovako?!
 
     /*@ManyToOne(fetch = LAZY)
     private User user;

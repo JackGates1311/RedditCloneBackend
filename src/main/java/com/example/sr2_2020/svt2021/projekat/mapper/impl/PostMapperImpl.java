@@ -29,7 +29,7 @@ public class PostMapperImpl extends PostMapper {
         post.text(postRequest.getText());
         post.title(postRequest.getTitle());
         post.username(username);
-        post.reactionCount(0);
+        post.reactionCount(postRequest.getReactionCount());
 
         if(community != null) {
 

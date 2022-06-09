@@ -21,5 +21,7 @@ public class PostRequest {
     private String title;
     private String username;
 
+    private Integer reactionCount;
+
 
 }
