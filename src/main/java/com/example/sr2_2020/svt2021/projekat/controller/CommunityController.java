@@ -58,7 +58,7 @@ public class CommunityController {
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<?> deleteCommunity(@PathVariable Long id) {
 
-       return communityService.deleteById(id);
+        return communityService.deleteById(id);
 
     }
 }

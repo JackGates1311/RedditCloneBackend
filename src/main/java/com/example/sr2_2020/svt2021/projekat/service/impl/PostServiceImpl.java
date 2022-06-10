@@ -24,10 +24,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -112,13 +111,25 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public ResponseEntity<?> deleteById(Long id) {
+    public ResponseEntity<?> deleteById(Long id, HttpServletRequest request) {
 
-        reactionRepository.deleteByPostPostId(id);
+        PostResponse postResponse = getPost(id);
 
-        postRepository.deleteById(id);
+        if(Objects.equals(postResponse.getUsername(), tokenUtils.getUsernameFromToken(tokenUtils.getToken(request)))) {
 
-        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+            reactionRepository.deleteByPostPostId(id);
+
+            postRepository.deleteById(id);
+
+            return new ResponseEntity<>("Post has been deleted successfully", HttpStatus.ACCEPTED);
+
+        } else {
+
+            return new ResponseEntity<>("You don't have permissions to delete this post", HttpStatus.FORBIDDEN);
+        }
+
+
+        //return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
     @Override

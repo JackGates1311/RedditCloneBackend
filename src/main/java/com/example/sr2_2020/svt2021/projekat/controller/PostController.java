@@ -55,9 +55,9 @@ public class PostController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<?> deletePost(@PathVariable Long id) {
+    public ResponseEntity<?> deletePost(@PathVariable Long id, HttpServletRequest request) {
 
-        return postService.deleteById(id);
+        return postService.deleteById(id, request);
     }
 
     @RequestMapping("/communityName={communityName}")

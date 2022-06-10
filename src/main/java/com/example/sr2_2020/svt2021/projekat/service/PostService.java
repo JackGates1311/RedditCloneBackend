@@ -28,7 +28,7 @@ public interface PostService {
     public ResponseEntity<PostRequest> editPost(PostRequest postRequest, Long id, HttpServletRequest request);
 
     @Transactional
-    public ResponseEntity<?> deleteById(Long id);
+    public ResponseEntity<?> deleteById(Long id, HttpServletRequest request);
 
     @Transactional
     public List<PostResponse> getPostsByCommunityName(String communityName);
