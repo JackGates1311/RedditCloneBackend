@@ -101,13 +101,21 @@ public class PostServiceImpl implements PostService {
 
         Post post = postMapper.map(postRequest, community, username);
 
-        post.setReactionCount(getPostForEdit.getReactionCount());
+        if(Objects.equals(getPost(id).getUsername(), username)) {
 
-        post.setPostId(id);
+            post.setReactionCount(getPostForEdit.getReactionCount());
 
-        postRepository.save(post);
+            post.setPostId(id);
 
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(postRequest);
+            postRepository.save(post);
+
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(postRequest);
+
+        } else {
+
+            return new ResponseEntity("You don't have permissions to edit this post", HttpStatus.FORBIDDEN);
+        }
+
     }
 
     @Override
