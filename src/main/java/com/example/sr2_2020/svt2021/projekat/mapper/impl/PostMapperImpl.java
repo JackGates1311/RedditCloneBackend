@@ -37,6 +37,11 @@ public class PostMapperImpl extends PostMapper {
 
         }
 
+        if(postRequest.getReactionCount() == null) {
+
+            post.reactionCount(0);
+        }
+
         return post.build();
     }
 
