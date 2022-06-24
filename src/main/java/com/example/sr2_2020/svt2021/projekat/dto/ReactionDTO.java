@@ -13,9 +13,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ReactionDTO {
 
-    private long reactionId;
+    private Long reactionId;
     private ReactionType reactionType;
     private Long postId;
+    private Long userId;
     private String username;
 
 }

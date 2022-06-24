@@ -12,21 +12,4 @@ import javax.servlet.http.HttpServletRequest;
 @Component
 public class WebSecurity {
 
-    @Autowired
-    private UserService userService;
-
-    public boolean checkUserId(Authentication authentication, HttpServletRequest request, int id) {
-
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-
-        User user = userService.findByUsername(userDetails.getUsername());
-
-        if(id == user.getUserId()) {
-
-            return true;
-        }
-
-        return false;
-    }
-
 }

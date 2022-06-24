@@ -39,8 +39,12 @@ public class Post {
     @NotBlank(message = "Post title cannot be empty")
     private String title;
 
-    @NotBlank(message = "Username cannot be empty")
-    private String username;
+    //@NotBlank(message = "Username cannot be empty")
+    //private String username;
+
+    @ManyToOne(fetch = EAGER)
+    @JoinColumn(name = "userId", referencedColumnName = "userId")
+    private User user;
 
     @ManyToOne(fetch = EAGER)
     @JoinColumn(name = "communityId", referencedColumnName = "communityId")

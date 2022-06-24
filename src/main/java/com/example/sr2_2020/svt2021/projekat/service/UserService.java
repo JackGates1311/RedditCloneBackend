@@ -15,8 +15,6 @@ public interface UserService {
     @Transactional
     public void register(RegisterRequest registerRequest);
 
-    public User findByUsername(String username);
-
     @Transactional
     public ResponseEntity<ChangePasswordRequest> changePassword(ChangePasswordRequest changePasswordRequest,
                                                                 HttpServletRequest request);

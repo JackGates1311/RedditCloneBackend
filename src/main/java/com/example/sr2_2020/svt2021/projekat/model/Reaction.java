@@ -36,7 +36,8 @@ public class Reaction {
     @JoinColumn(name = "postId", referencedColumnName = "postId")
     private Post post;
 
-    @NotBlank(message = "Username cannot be empty")
-    private String username;
+    @ManyToOne(fetch = EAGER)
+    @JoinColumn(name = "userId", referencedColumnName = "userId")
+    private User user;
 
 }

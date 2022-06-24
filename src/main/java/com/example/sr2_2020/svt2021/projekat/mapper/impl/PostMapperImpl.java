@@ -6,6 +6,7 @@ import com.example.sr2_2020.svt2021.projekat.mapper.PostMapper;
 import com.example.sr2_2020.svt2021.projekat.model.Community;
 import com.example.sr2_2020.svt2021.projekat.model.Post;
 import com.example.sr2_2020.svt2021.projekat.model.Post.PostBuilder;
+import com.example.sr2_2020.svt2021.projekat.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 public class PostMapperImpl extends PostMapper {
 
     @Override
-    public Post map(PostRequest postRequest, Community community, String username) {
+    public Post map(PostRequest postRequest, Community community, User user) {
 
         if(postRequest == null)
             return null;
@@ -28,13 +29,17 @@ public class PostMapperImpl extends PostMapper {
         post.imagePath("");
         post.text(postRequest.getText());
         post.title(postRequest.getTitle());
-        post.username(username);
         post.reactionCount(postRequest.getReactionCount());
 
         if(community != null) {
 
             post.community(community);
 
+        }
+
+        if(user != null) {
+
+            post.user(user);
         }
 
         if(postRequest.getReactionCount() == null) {
@@ -58,10 +63,10 @@ public class PostMapperImpl extends PostMapper {
         postResponse.setImagePath(post.getImagePath());
         postResponse.setText(post.getText());
         postResponse.setTitle(post.getTitle());
-        postResponse.setUsername(post.getUsername());
         postResponse.setReactionCount(post.getReactionCount());
 
         postResponse.setCommunityName(postCommunityName(post));
+        postResponse.setUsername(postUserName(post));
 
         /* PostResponseBuilder postResponseDTO = PostResponse.builder();
 
@@ -76,6 +81,24 @@ public class PostMapperImpl extends PostMapper {
 
         return postResponse;
 
+    }
+
+    private String postUserName(Post post) {
+
+        if(post == null)
+            return null;
+
+        User user = post.getUser();
+
+        if(user == null)
+            return null;
+
+        String userName = user.getUsername();
+
+        if(user.getUsername() == null)
+            return null;
+
+        return userName;
     }
 
     private String postCommunityName(Post post) {

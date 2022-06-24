@@ -19,7 +19,6 @@ public class PostRequest {
     private String imagePath;
     private String text;
     private String title;
-    private String username;
 
     private Integer reactionCount;
 

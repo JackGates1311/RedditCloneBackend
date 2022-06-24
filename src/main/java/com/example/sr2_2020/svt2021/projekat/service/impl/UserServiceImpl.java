@@ -59,12 +59,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findByUsername(String username) {
-
-        return null;
-    }
-
-    @Override
     public ResponseEntity<ChangePasswordRequest> changePassword(ChangePasswordRequest changePasswordRequest,
                                                                 HttpServletRequest request) {
 

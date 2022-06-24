@@ -10,6 +10,7 @@ import com.example.sr2_2020.svt2021.projekat.model.ReactionType;
 import com.example.sr2_2020.svt2021.projekat.model.User;
 import com.example.sr2_2020.svt2021.projekat.repository.PostRepository;
 import com.example.sr2_2020.svt2021.projekat.repository.ReactionRepository;
+import com.example.sr2_2020.svt2021.projekat.repository.UserRepository;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.ReactionService;
 import com.example.sr2_2020.svt2021.projekat.service.UserService;
@@ -47,6 +48,9 @@ public class ReactionServiceImpl implements ReactionService {
     @Autowired
     UserService userService;
 
+    @Autowired
+    UserRepository userRepository;
+
     @Override
     public void reaction(ReactionDTO reactionDTO, HttpServletRequest request) {
 
@@ -57,11 +61,14 @@ public class ReactionServiceImpl implements ReactionService {
 
         String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
 
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new
+                SpringRedditCloneException("User with username " + username + " not found"));
+
         Optional<Reaction> reactionByPostAndUser =
-                reactionRepository.findByPostAndUsernameOrderByReactionIdDesc(post, username);
+                reactionRepository.findByPostAndUserOrderByReactionIdDesc(post, user);
 
         // da li reakcija na navedeni post postoji od strane istog korisnika?
-        if(!reactionRepository.findByPostAndUsernameOrderByReactionIdDesc(post, username).isEmpty()) {
+        if(!reactionRepository.findByPostAndUserOrderByReactionIdDesc(post, user).isEmpty()) {
 
             reactionDTO.setReactionId(reactionByPostAndUser.get().getReactionId());
 
@@ -122,7 +129,7 @@ public class ReactionServiceImpl implements ReactionService {
 
         }
 
-        reactionRepository.save(reactionMapper.mapDTOToReaction(reactionDTO, post, username));
+        reactionRepository.save(reactionMapper.mapDTOToReaction(reactionDTO, post, user));
 
         postRepository.save(post);             // WARNING: You do not have this in your model
 
@@ -133,7 +140,10 @@ public class ReactionServiceImpl implements ReactionService {
 
         String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
 
-        return reactionRepository.findByUsername(username).stream().map(reactionMapper::mapToDTO).
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new
+                SpringRedditCloneException("User with username " + username + " not found"));
+
+        return reactionRepository.findByUser(user).stream().map(reactionMapper::mapToDTO).
                 collect(Collectors.toList());
     }
 

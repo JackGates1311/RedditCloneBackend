@@ -13,9 +13,9 @@ import java.util.Optional;
 @Repository
 public interface ReactionRepository extends JpaRepository<Reaction, Long> {
 
-    Optional<Reaction> findByPostAndUsernameOrderByReactionIdDesc(Post post, String username);
+    Optional<Reaction> findByPostAndUserOrderByReactionIdDesc(Post post, User user);
 
-    List<Reaction> findByUsername(String username);
+    List<Reaction> findByUser(User user);
 
     @Transactional
     void deleteByPostPostId(Long postId);

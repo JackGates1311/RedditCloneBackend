@@ -5,13 +5,16 @@ import com.example.sr2_2020.svt2021.projekat.dto.PostRequest;
 import com.example.sr2_2020.svt2021.projekat.dto.PostResponse;
 import com.example.sr2_2020.svt2021.projekat.exception.CommunityNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.PostNotFoundException;
+import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneException;
 import com.example.sr2_2020.svt2021.projekat.mapper.CommunityMapper;
 import com.example.sr2_2020.svt2021.projekat.mapper.PostMapper;
 import com.example.sr2_2020.svt2021.projekat.model.Community;
 import com.example.sr2_2020.svt2021.projekat.model.Post;
+import com.example.sr2_2020.svt2021.projekat.model.User;
 import com.example.sr2_2020.svt2021.projekat.repository.CommunityRepository;
 import com.example.sr2_2020.svt2021.projekat.repository.PostRepository;
 import com.example.sr2_2020.svt2021.projekat.repository.ReactionRepository;
+import com.example.sr2_2020.svt2021.projekat.repository.UserRepository;
 import com.example.sr2_2020.svt2021.projekat.security.AuthTokenFilter;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.CommunityService;
@@ -61,6 +64,9 @@ public class PostServiceImpl implements PostService {
     @Autowired
     ReactionRepository reactionRepository;
 
+    @Autowired
+    UserRepository userRepository;
+
     @Override
     public void save(PostRequest postRequest, HttpServletRequest request) {
 
@@ -70,7 +76,10 @@ public class PostServiceImpl implements PostService {
 
         String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
 
-        postRepository.save(postMapper.map(postRequest, community, username));
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new
+                SpringRedditCloneException("User with username " + username + " not found"));
+
+        postRepository.save(postMapper.map(postRequest, community, user));
 
     }
 
@@ -97,9 +106,12 @@ public class PostServiceImpl implements PostService {
 
         String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
 
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new
+                SpringRedditCloneException("User with username " + username + " not found"));
+
         Post getPostForEdit = postRepository.findById(id).orElseThrow(() -> new PostNotFoundException(id.toString()));
 
-        Post post = postMapper.map(postRequest, community, username);
+        Post post = postMapper.map(postRequest, community, user);
 
         if(Objects.equals(getPost(id).getUsername(), username)) {
 
