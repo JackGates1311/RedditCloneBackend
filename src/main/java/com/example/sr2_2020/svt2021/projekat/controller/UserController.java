@@ -1,10 +1,6 @@
 package com.example.sr2_2020.svt2021.projekat.controller;
 
-import com.example.sr2_2020.svt2021.projekat.dto.AuthResponse;
-import com.example.sr2_2020.svt2021.projekat.dto.ChangePasswordRequest;
-import com.example.sr2_2020.svt2021.projekat.dto.LoginRequest;
-import com.example.sr2_2020.svt2021.projekat.dto.RegisterRequest;
-import com.example.sr2_2020.svt2021.projekat.model.User;
+import com.example.sr2_2020.svt2021.projekat.dto.*;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.UserService;
 import com.example.sr2_2020.svt2021.projekat.service.impl.UserServiceImpl;
@@ -15,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
@@ -71,6 +68,20 @@ public class UserController {
 
         return userService.changePassword(changePasswordRequest, request);
 
+    }
+
+    @RequestMapping(value = "/accountInfo")
+    public ResponseEntity<UserInfoDTO> getAccountInfo(HttpServletRequest request) {
+
+        String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
+
+        return new ResponseEntity<>(userService.getAccountInfo(username), HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/updateAccountInfo")
+    public ResponseEntity<?> updateAccountInfo(@RequestBody UserInfoDTO userInfoDTO, HttpServletRequest request) {
+
+        return userService.updateAccountInfo(userInfoDTO, request);
     }
 
 }

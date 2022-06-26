@@ -3,13 +3,16 @@ package com.example.sr2_2020.svt2021.projekat.service.impl;
 import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTO;
 import com.example.sr2_2020.svt2021.projekat.dto.PostRequest;
 import com.example.sr2_2020.svt2021.projekat.dto.PostResponse;
+import com.example.sr2_2020.svt2021.projekat.dto.ReactionDTO;
 import com.example.sr2_2020.svt2021.projekat.exception.CommunityNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.PostNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneException;
 import com.example.sr2_2020.svt2021.projekat.mapper.CommunityMapper;
 import com.example.sr2_2020.svt2021.projekat.mapper.PostMapper;
+import com.example.sr2_2020.svt2021.projekat.mapper.ReactionMapper;
 import com.example.sr2_2020.svt2021.projekat.model.Community;
 import com.example.sr2_2020.svt2021.projekat.model.Post;
+import com.example.sr2_2020.svt2021.projekat.model.ReactionType;
 import com.example.sr2_2020.svt2021.projekat.model.User;
 import com.example.sr2_2020.svt2021.projekat.repository.CommunityRepository;
 import com.example.sr2_2020.svt2021.projekat.repository.PostRepository;
@@ -25,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -67,6 +71,9 @@ public class PostServiceImpl implements PostService {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    ReactionMapper reactionMapper;
+
     @Override
     public void save(PostRequest postRequest, HttpServletRequest request) {
 
@@ -79,8 +86,16 @@ public class PostServiceImpl implements PostService {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new
                 SpringRedditCloneException("User with username " + username + " not found"));
 
-        postRepository.save(postMapper.map(postRequest, community, user));
+        postRequest.setReactionCount(1);
 
+        Post post = postRepository.save(postMapper.map(postRequest, community, user));
+
+        ReactionDTO reactionDTO = new ReactionDTO();
+
+        reactionDTO.setReactionType(ReactionType.UPVOTE);
+        reactionDTO.setPostId(post.getPostId());
+
+        reactionRepository.save(reactionMapper.mapDTOToReaction(reactionDTO, post, user));
     }
 
     @Override
@@ -107,7 +122,7 @@ public class PostServiceImpl implements PostService {
         String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
 
         User user = userRepository.findByUsername(username).orElseThrow(() -> new
-                SpringRedditCloneException("User with username " + username + " not found"));
+                UsernameNotFoundException("User with username " + username + " not found"));
 
         Post getPostForEdit = postRepository.findById(id).orElseThrow(() -> new PostNotFoundException(id.toString()));
 

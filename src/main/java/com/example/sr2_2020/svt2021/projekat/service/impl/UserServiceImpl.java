@@ -2,8 +2,11 @@ package com.example.sr2_2020.svt2021.projekat.service.impl;
 
 import com.example.sr2_2020.svt2021.projekat.dto.ChangePasswordRequest;
 import com.example.sr2_2020.svt2021.projekat.dto.RegisterRequest;
+import com.example.sr2_2020.svt2021.projekat.dto.UserInfoDTO;
+import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneException;
 import com.example.sr2_2020.svt2021.projekat.mapper.UserMapper;
 import com.example.sr2_2020.svt2021.projekat.model.User;
+import com.example.sr2_2020.svt2021.projekat.repository.PostRepository;
 import com.example.sr2_2020.svt2021.projekat.repository.UserRepository;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.UserService;
@@ -34,6 +37,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     private final UserMapper userMapper;
+
+    private final PostRepository postRepository;
 
     @Autowired
     TokenUtils tokenUtils;
@@ -96,6 +101,37 @@ public class UserServiceImpl implements UserService {
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(changePasswordRequest);
         }
+
+    }
+
+    @Override
+    public UserInfoDTO getAccountInfo(String username) {
+
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new SpringRedditCloneException(
+                "User not found with username: " + username));
+
+        int karma = postRepository.sumReactionCountByUser(user);
+
+        return userMapper.mapUserInfoToDTO(user, karma);
+    }
+
+    @Override
+    public ResponseEntity<?> updateAccountInfo(UserInfoDTO userInfoDTO, HttpServletRequest request) {
+
+        String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
+
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(
+                "User with username " + username + " not found"));
+
+        User userEditData = userMapper.mapDTOToUser(userInfoDTO);
+
+        user.setAvatar(userEditData.getAvatar());
+        user.setDisplayName(userEditData.getDisplayName());
+        user.setDescription(userEditData.getDescription());
+
+        userRepository.save(user);
+
+        return new ResponseEntity<>("Account info has been succesfully changed", HttpStatus.ACCEPTED);
 
     }
 
