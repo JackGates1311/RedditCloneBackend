@@ -58,6 +58,7 @@ public class UserServiceImpl implements UserService {
         user.setRegistrationDate(LocalDateTime.now());
         user.setDescription(registerRequest.getDescription());
         user.setDisplayName(registerRequest.getDisplayName());
+        user.setIsAdministrator(false);
 
         userRepository.save(user);
 

@@ -35,12 +35,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter { // FIX CLASS
                 .userDetailsService(this.userDetailsService).passwordEncoder(encoderConfig.passwordEncoder());
     }
 
-    /* @Bean
-    public PasswordEncoder passwordEncoder() {
-
-        return new BCryptPasswordEncoder();
-    } */
-
     @Bean
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {

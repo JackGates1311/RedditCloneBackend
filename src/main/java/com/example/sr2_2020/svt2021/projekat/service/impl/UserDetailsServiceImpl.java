@@ -31,8 +31,14 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         User user = userFound.orElseThrow(
                 () -> new UsernameNotFoundException("User with entered username (" + username + ")  doesn't exists"));
 
+        String role = "USER";
+
+        if(user.getIsAdministrator())
+            role = "ADMINISTRATOR";
+
+
         return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), true,
-                true, true, true, getAuthorities("USER"));
+                true, true, true, getAuthorities(role));
     }
 
     private Collection<? extends GrantedAuthority> getAuthorities(String role) {

@@ -18,4 +18,5 @@ public class RegisterRequest {
     private String avatar;
     private String description;
     private String displayName;
+    private Boolean isAdministrator;
 }

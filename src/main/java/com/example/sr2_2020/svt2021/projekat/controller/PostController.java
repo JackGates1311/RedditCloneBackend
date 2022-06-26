@@ -9,6 +9,8 @@ import org.apache.catalina.LifecycleState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.function.ServerResponse;
 
@@ -27,6 +29,7 @@ public class PostController {
     @Autowired
     PostService postService;
 
+    @PreAuthorize("hasAuthority('USER')")
     @RequestMapping(value = "/createPost", method = RequestMethod.POST)
     public ResponseEntity createPost(@RequestBody PostRequest postRequest, HttpServletRequest request) {
 
@@ -47,6 +50,7 @@ public class PostController {
         return new ResponseEntity(postService.getPost(id), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAuthority('USER')")
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
     public ResponseEntity<PostRequest> editPost(@RequestBody PostRequest postRequest, @PathVariable Long id,
             HttpServletRequest request) {
@@ -54,6 +58,7 @@ public class PostController {
         return postService.editPost(postRequest, id, request);
     }
 
+    @PreAuthorize("hasAuthority('USER')")
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<?> deletePost(@PathVariable Long id, HttpServletRequest request) {
 

@@ -7,6 +7,7 @@ import com.example.sr2_2020.svt2021.projekat.service.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -58,10 +59,14 @@ public class UserController {
 
         int expiresIn = tokenUtils.getExpiredIn();
 
+        System.out.println("CLAIMS: " + tokenUtils.getClaimsFromToken(jwtToken));
+        System.out.println("ROLES: " + tokenUtils.getUserRoleFromToken(jwtToken));
+
         return ResponseEntity.ok(new AuthResponse(jwtToken, expiresIn));
 
     }
 
+    @PreAuthorize("hasAuthority('USER')")
     @RequestMapping(value = "/changePassword", method = RequestMethod.PUT)
     public ResponseEntity<ChangePasswordRequest> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest,
                                                           HttpServletRequest request) {
@@ -70,6 +75,7 @@ public class UserController {
 
     }
 
+    @PreAuthorize("hasAuthority('USER')")
     @RequestMapping(value = "/accountInfo")
     public ResponseEntity<UserInfoDTO> getAccountInfo(HttpServletRequest request) {
 
@@ -78,6 +84,7 @@ public class UserController {
         return new ResponseEntity<>(userService.getAccountInfo(username), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAuthority('USER')")
     @RequestMapping(value = "/updateAccountInfo")
     public ResponseEntity<?> updateAccountInfo(@RequestBody UserInfoDTO userInfoDTO, HttpServletRequest request) {
 

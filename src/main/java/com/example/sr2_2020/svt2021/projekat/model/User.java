@@ -45,8 +45,6 @@ public class User {
     @NotBlank(message = "Display name is required")
     private String displayName;
 
-
-
-
+    private Boolean isAdministrator;
 
 }

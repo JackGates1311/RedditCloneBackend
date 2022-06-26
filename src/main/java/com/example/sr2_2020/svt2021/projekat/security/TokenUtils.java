@@ -38,6 +38,25 @@ public class TokenUtils {
         }
     }
 
+    ///
+
+    public String getUserRoleFromToken(String token) {
+
+        try {
+
+            Map<String, Object> claimsList = new HashMap<>(this.getClaimsFromToken(token));
+
+            return claimsList.get("role").toString();
+
+        } catch (Exception e) {
+
+            return null;
+        }
+    }
+
+
+    ///
+
     public Claims getClaimsFromToken(String token) {
 
         Claims claims;
