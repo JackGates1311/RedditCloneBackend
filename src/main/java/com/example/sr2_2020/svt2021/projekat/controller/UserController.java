@@ -59,10 +59,12 @@ public class UserController {
 
         int expiresIn = tokenUtils.getExpiredIn();
 
-        System.out.println("CLAIMS: " + tokenUtils.getClaimsFromToken(jwtToken));
-        System.out.println("ROLES: " + tokenUtils.getUserRoleFromToken(jwtToken));
+        String role = tokenUtils.getUserRoleFromToken(jwtToken);
 
-        return ResponseEntity.ok(new AuthResponse(jwtToken, expiresIn));
+        //System.out.println("CLAIMS: " + tokenUtils.getClaimsFromToken(jwtToken));
+        //System.out.println("ROLES: " + tokenUtils.getUserRoleFromToken(jwtToken));
+
+        return ResponseEntity.ok(new AuthResponse(jwtToken, expiresIn, role));
 
     }
 

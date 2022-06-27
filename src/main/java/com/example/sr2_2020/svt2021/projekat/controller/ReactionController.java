@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,6 +21,7 @@ public class ReactionController {
     @Autowired
     ReactionService reactionService;
 
+    @PreAuthorize("hasAuthority('USER')")
     @RequestMapping(value = "", method = RequestMethod.POST)
     public ResponseEntity reaction(@RequestBody ReactionDTO reactionDTO, HttpServletRequest request) {
 
@@ -28,6 +30,7 @@ public class ReactionController {
         return new ResponseEntity("Your reaction has been saved", HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAuthority('USER')")
     @RequestMapping(value = "")
     public ResponseEntity<List<ReactionDTO>> getReactionsByUsername(HttpServletRequest request) {
 
