@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -119,25 +120,29 @@ public class CommentServiceImpl implements CommentService {
         return new ResponseEntity("You don't have permissions to edit this comment", HttpStatus.FORBIDDEN);
     }
 
+    List<Long> commentIdsToDelete;
+
     @Override
     public ResponseEntity deleteComment(Long id, HttpServletRequest request) {
 
+        commentIdsToDelete.clear();
+
+        return getCommentsToDelete(id, request);
+    }
+
+    private ResponseEntity getCommentsToDelete(Long id, HttpServletRequest request) {
+
         boolean isFinished = false;
         boolean isParentComment = true;
-        boolean returnToLoop = true;
 
         String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
 
         while(!isFinished) {
 
-            returnToLoop = true;
-
             Comment parentComment = commentRepository.findById(id).orElseThrow(() ->
                     new CommentNotFoundException("Comment not found with specified commentId"));
 
-
             if(!Objects.equals(parentComment.getUser().getUsername(), username) && isParentComment) {
-
 
                 return new ResponseEntity("You don't have permissions to delete this comment",
                         HttpStatus.FORBIDDEN);
@@ -145,9 +150,7 @@ public class CommentServiceImpl implements CommentService {
 
             isParentComment = false;
 
-            parentComment.setIsDeleted(true);
-
-            commentRepository.save(parentComment);
+            commentIdsToDelete.add(parentComment.getCommentId());
 
             List<String> parentCommentIdReplies = List.of(parentComment.getReplies().split(","));
 
@@ -157,30 +160,50 @@ public class CommentServiceImpl implements CommentService {
 
             } else {
 
-                Comment childComment = null;
+                Comment childComment;
 
                 int i = 0;
 
-                while (i < parentCommentIdReplies.size() && returnToLoop) {
+                while (i < parentCommentIdReplies.size()) {
 
                     childComment = commentRepository.findById(Long.parseLong(
                             parentCommentIdReplies.get(i))).orElseThrow(() ->
                             new CommentNotFoundException("Comment not found with specified commentId"));
 
-                    childComment.setIsDeleted(true);
-
-                    commentRepository.save(childComment);
+                    commentIdsToDelete.add(Long.valueOf(parentCommentIdReplies.get(i)));
 
                     i++;
 
-                    returnToLoop = false;
+                    id = childComment.getCommentId();
+
+                    getCommentsToDelete(id, request);
+
                 }
 
-                id = childComment.getCommentId();
 
             }
+
         }
 
+        commentIdsToDelete = commentIdsToDelete.stream().distinct().collect(Collectors.toList());
+
+        System.out.println("AFTER:" + commentIdsToDelete);
+
+        deleteComments(commentIdsToDelete);
+
         return new ResponseEntity("Comment has been successfully deleted", HttpStatus.ACCEPTED);
+    }
+
+    private void deleteComments(List<Long> commentIdsToDelete) {
+
+        for (Long commentId : commentIdsToDelete) {
+
+            Comment comment = commentRepository.findById(commentId).orElseThrow(() ->
+                    new CommentNotFoundException("Comment not found with specified commentId"));
+
+            comment.setIsDeleted(true);
+
+            commentRepository.save(comment);
+        }
     }
 }
