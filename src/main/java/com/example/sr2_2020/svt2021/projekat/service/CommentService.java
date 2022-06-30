@@ -17,4 +17,6 @@ public interface CommentService {
             request);
 
     public ResponseEntity deleteComment(Long id, HttpServletRequest request);
+
+    public CommentDTOResponse getComment(Long id);
 }

@@ -96,7 +96,7 @@ public class PostServiceImpl implements PostService {
         reactionDTO.setReactionType(ReactionType.UPVOTE);
         reactionDTO.setPostId(post.getPostId());
 
-        reactionRepository.save(reactionMapper.mapDTOToReaction(reactionDTO, post, user));
+        reactionRepository.save(reactionMapper.mapDTOToReaction(reactionDTO, post, user, null));
     }
 
     @Override

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class CommentMapperImpl implements CommentMapper {
@@ -30,13 +31,14 @@ public class CommentMapperImpl implements CommentMapper {
         commentBuilder.replies("");
         commentBuilder.post(post);
         commentBuilder.user(user);
+        commentBuilder.reactionCount(0);
 
 
         return commentBuilder.build();
     }
 
     @Override
-    public CommentDTOResponse mapCommentToDTO(Comment comment) {
+    public CommentDTOResponse mapCommentToDTO(Comment comment, List<CommentDTOResponse> replies) {
 
         if(comment == null)
             return null;
@@ -44,13 +46,14 @@ public class CommentMapperImpl implements CommentMapper {
         CommentDTOResponse commentDTO = new CommentDTOResponse();
 
         commentDTO.setCommentId(comment.getCommentId());
-        commentDTO.setReplies(comment.getReplies());
+        commentDTO.setReplies(replies);
         commentDTO.setText(comment.getText());
-        commentDTO.setTimestamp(LocalDateTime.now().toString());
+        commentDTO.setTimestamp(comment.getTimestamp().toString());
         commentDTO.setPostId(comment.getPost().getPostId());
         commentDTO.setUserId(comment.getUser().getUserId());
         commentDTO.setIsDeleted(false);
         commentDTO.setUsername(comment.getUser().getUsername());
+        commentDTO.setReactionCount(comment.getReactionCount());
 
         return commentDTO;
     }

@@ -2,6 +2,7 @@ package com.example.sr2_2020.svt2021.projekat.mapper.impl;
 
 import com.example.sr2_2020.svt2021.projekat.dto.ReactionDTO;
 import com.example.sr2_2020.svt2021.projekat.mapper.ReactionMapper;
+import com.example.sr2_2020.svt2021.projekat.model.Comment;
 import com.example.sr2_2020.svt2021.projekat.model.Post;
 import com.example.sr2_2020.svt2021.projekat.model.Reaction;
 import com.example.sr2_2020.svt2021.projekat.model.Reaction.ReactionBuilder;
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
 public class ReactionMapperImpl implements ReactionMapper {
 
     @Override
-    public Reaction mapDTOToReaction(ReactionDTO reactionDTO, Post post, User user) {
+    public Reaction mapDTOToReaction(ReactionDTO reactionDTO, Post post, User user, Comment comment) {
 
         if(reactionDTO == null)
             return null;
@@ -29,6 +30,7 @@ public class ReactionMapperImpl implements ReactionMapper {
         reaction.timestamp(LocalDateTime.now());
         reaction.post(post);
         reaction.user(user);
+        reaction.comment(comment);
 
         return reaction.build();
     }
@@ -43,7 +45,16 @@ public class ReactionMapperImpl implements ReactionMapper {
 
         reactionDTO.setReactionId(reaction.getReactionId());
         reactionDTO.setReactionType(reaction.getReactionType());
-        reactionDTO.setPostId(reaction.getPost().getPostId());
+
+        try {
+
+            reactionDTO.setPostId(reaction.getPost().getPostId());
+
+        } catch (Exception ignored) {
+
+            reactionDTO.setCommentId(reaction.getComment().getCommentId());
+        }
+
         reactionDTO.setUserId(reaction.getUser().getUserId());
 
         reactionDTO.setUsername(reaction.getUser().getUsername());

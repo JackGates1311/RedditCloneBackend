@@ -39,6 +39,12 @@ public class CommentController {
         return new ResponseEntity<>(commentService.getPostComments(id, request), HttpStatus.OK);
     }
 
+    @RequestMapping(value = "/{id}")
+    public ResponseEntity<CommentDTOResponse> getComment(@PathVariable Long id) {
+
+        return new ResponseEntity<CommentDTOResponse>(commentService.getComment(id), HttpStatus.OK);
+    }
+
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
     public ResponseEntity<CommentDTORequest> editComment(@PathVariable Long id, @RequestBody CommentDTORequest
             commentDTORequest, HttpServletRequest request) {

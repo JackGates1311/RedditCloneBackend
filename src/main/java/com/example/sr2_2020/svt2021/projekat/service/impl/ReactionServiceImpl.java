@@ -1,13 +1,12 @@
 package com.example.sr2_2020.svt2021.projekat.service.impl;
 
 import com.example.sr2_2020.svt2021.projekat.dto.ReactionDTO;
+import com.example.sr2_2020.svt2021.projekat.exception.CommentNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.PostNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneException;
 import com.example.sr2_2020.svt2021.projekat.mapper.ReactionMapper;
-import com.example.sr2_2020.svt2021.projekat.model.Post;
-import com.example.sr2_2020.svt2021.projekat.model.Reaction;
-import com.example.sr2_2020.svt2021.projekat.model.ReactionType;
-import com.example.sr2_2020.svt2021.projekat.model.User;
+import com.example.sr2_2020.svt2021.projekat.model.*;
+import com.example.sr2_2020.svt2021.projekat.repository.CommentRepository;
 import com.example.sr2_2020.svt2021.projekat.repository.PostRepository;
 import com.example.sr2_2020.svt2021.projekat.repository.ReactionRepository;
 import com.example.sr2_2020.svt2021.projekat.repository.UserRepository;
@@ -51,30 +50,80 @@ public class ReactionServiceImpl implements ReactionService {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    CommentRepository commentRepository;
+
     @Override
     public void reaction(ReactionDTO reactionDTO, HttpServletRequest request) {
 
         //TODO refactor this method
 
-        Post post = postRepository.findById(reactionDTO.getPostId()).orElseThrow(() ->
-                new PostNotFoundException("Post not found for specified post id"));
+        // Method written below is for saving post reaction!
 
         String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
 
         User user = userRepository.findByUsername(username).orElseThrow(() -> new
                 SpringRedditCloneException("User with username " + username + " not found"));
 
-        Optional<Reaction> reactionByPostAndUser =
-                reactionRepository.findByPostAndUserOrderByReactionIdDesc(post, user);
+        if(reactionDTO.getCommentId() == null) {
 
-        // da li reakcija na navedeni post postoji od strane istog korisnika?
-        if(!reactionRepository.findByPostAndUserOrderByReactionIdDesc(post, user).isEmpty()) {
+            Post post = postRepository.findById(reactionDTO.getPostId()).orElseThrow(() ->
+                    new PostNotFoundException("Post not found for specified post id"));
 
-            reactionDTO.setReactionId(reactionByPostAndUser.get().getReactionId());
+            Optional<Reaction> reactionByPostAndUser =
+                    reactionRepository.findByPostAndUserOrderByReactionIdDesc(post, user);
 
-            // provera da li je stanje reackije null
+            // da li reakcija na navedeni post postoji od strane istog korisnika?
 
-            if(Objects.isNull(reactionByPostAndUser.get().getReactionType())) {
+            if(!reactionRepository.findByPostAndUserOrderByReactionIdDesc(post, user).isEmpty()) {
+
+                reactionDTO.setReactionId(reactionByPostAndUser.get().getReactionId());
+
+                // provera da li je stanje reackije null
+
+                if(Objects.isNull(reactionByPostAndUser.get().getReactionType())) {
+
+                    if(UPVOTE.equals(reactionDTO.getReactionType())) {
+
+                        post.setReactionCount(post.getReactionCount() + 1);
+
+                    } else {
+
+                        post.setReactionCount(post.getReactionCount() - 1);
+                    }
+
+                } else {
+
+                    // kliknuto je na istu reakciju kao i prethodni put
+
+                    if(reactionByPostAndUser.get().getReactionType().equals(reactionDTO.getReactionType())) {
+
+                        if(UPVOTE.equals(reactionDTO.getReactionType())) {
+
+                            reactionDTO.setReactionType(null);
+                            post.setReactionCount(post.getReactionCount() - 1);
+
+                        } else {
+
+                            reactionDTO.setReactionType(null);
+                            post.setReactionCount(post.getReactionCount() + 1);
+                        }
+
+                    } else {
+
+                        if(UPVOTE.equals(reactionDTO.getReactionType())) {
+
+                            post.setReactionCount(post.getReactionCount() + 2);
+
+                        } else {
+
+                            post.setReactionCount(post.getReactionCount() - 2);
+                        }
+                    }
+
+                }
+
+            } else {
 
                 if(UPVOTE.equals(reactionDTO.getReactionType())) {
 
@@ -85,53 +134,86 @@ public class ReactionServiceImpl implements ReactionService {
                     post.setReactionCount(post.getReactionCount() - 1);
                 }
 
-            } else {
+            }
 
-                // kliknuto je na istu reakciju kao i prethodni put
+            reactionRepository.save(reactionMapper.mapDTOToReaction(reactionDTO, post, user, null));
 
-                if(reactionByPostAndUser.get().getReactionType().equals(reactionDTO.getReactionType())) {
+            postRepository.save(post);             // WARNING: You do not have this in your model
+
+        } else {
+
+            Comment comment = commentRepository.findById(reactionDTO.getCommentId()).orElseThrow(() ->
+                    new CommentNotFoundException("Comment not found with specified commentId"));
+
+            Optional<Reaction> reactionByCommentAndUser =
+                    reactionRepository.findByCommentAndUserOrderByReactionIdDesc(comment, user);
+
+            if(!reactionRepository.findByCommentAndUserOrderByReactionIdDesc(comment, user).isEmpty()) {
+
+                reactionDTO.setReactionId(reactionByCommentAndUser.get().getReactionId());
+
+                if(Objects.isNull(reactionByCommentAndUser.get().getReactionType())) {
 
                     if(UPVOTE.equals(reactionDTO.getReactionType())) {
 
-                        reactionDTO.setReactionType(null);
-                        post.setReactionCount(post.getReactionCount() - 1);
+                        comment.setReactionCount(comment.getReactionCount() + 1);
 
                     } else {
 
-                        reactionDTO.setReactionType(null);
-                        post.setReactionCount(post.getReactionCount() + 1);
+                        comment.setReactionCount(comment.getReactionCount() - 1);
                     }
 
                 } else {
 
-                    if(UPVOTE.equals(reactionDTO.getReactionType())) {
+                    if(reactionByCommentAndUser.get().getReactionType().equals(reactionDTO.getReactionType())) {
 
-                        post.setReactionCount(post.getReactionCount() + 2);
+                        if(UPVOTE.equals(reactionDTO.getReactionType())) {
+
+                            reactionDTO.setReactionType(null);
+                            comment.setReactionCount(comment.getReactionCount() - 1);
+
+                        } else {
+
+                            reactionDTO.setReactionType(null);
+                            comment.setReactionCount(comment.getReactionCount() + 1);
+                        }
 
                     } else {
 
-                        post.setReactionCount(post.getReactionCount() - 2);
+                        if(UPVOTE.equals(reactionDTO.getReactionType())) {
+
+                            comment.setReactionCount(comment.getReactionCount() + 2);
+
+                        } else {
+
+                            comment.setReactionCount(comment.getReactionCount() - 2);
+                        }
+
                     }
+
+                }
+
+            } else {
+
+                if(UPVOTE.equals(reactionDTO.getReactionType())) {
+
+                    comment.setReactionCount(comment.getReactionCount() + 1);
+
+                } else {
+
+                    comment.setReactionCount(comment.getReactionCount() - 1);
+
                 }
 
             }
 
-        } else {
+            reactionRepository.save(reactionMapper.mapDTOToReaction(reactionDTO, null , user, comment));
 
-            if(UPVOTE.equals(reactionDTO.getReactionType())) {
-
-                post.setReactionCount(post.getReactionCount() + 1);
-
-            } else {
-
-                post.setReactionCount(post.getReactionCount() - 1);
-            }
+            commentRepository.save(comment);
 
         }
 
-        reactionRepository.save(reactionMapper.mapDTOToReaction(reactionDTO, post, user));
 
-        postRepository.save(post);             // WARNING: You do not have this in your model
 
     }
 

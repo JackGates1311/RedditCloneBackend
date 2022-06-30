@@ -31,10 +31,13 @@ public class Reaction {
 
     private LocalDateTime timestamp;
 
-    @NotNull
     @ManyToOne(fetch = EAGER)
     @JoinColumn(name = "postId", referencedColumnName = "postId")
     private Post post;
+
+    @ManyToOne(fetch = EAGER)
+    @JoinColumn(name = "commentId", referencedColumnName = "commentId")
+    private Comment comment;
 
     @ManyToOne(fetch = EAGER)
     @JoinColumn(name = "userId", referencedColumnName = "userId")

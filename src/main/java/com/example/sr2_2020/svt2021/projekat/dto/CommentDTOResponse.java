@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -17,6 +18,7 @@ public class CommentDTOResponse {
     private Long postId;
     private Long userId;
     private String username;
-    private String replies;
+    private List<CommentDTOResponse> replies;
     private Boolean isDeleted;
+    private Integer reactionCount;
 }

@@ -2,15 +2,19 @@ package com.example.sr2_2020.svt2021.projekat.service.impl;
 
 import com.example.sr2_2020.svt2021.projekat.dto.CommentDTORequest;
 import com.example.sr2_2020.svt2021.projekat.dto.CommentDTOResponse;
+import com.example.sr2_2020.svt2021.projekat.dto.ReactionDTO;
 import com.example.sr2_2020.svt2021.projekat.exception.CommentNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.PostNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneException;
 import com.example.sr2_2020.svt2021.projekat.mapper.CommentMapper;
+import com.example.sr2_2020.svt2021.projekat.mapper.ReactionMapper;
 import com.example.sr2_2020.svt2021.projekat.model.Comment;
 import com.example.sr2_2020.svt2021.projekat.model.Post;
+import com.example.sr2_2020.svt2021.projekat.model.ReactionType;
 import com.example.sr2_2020.svt2021.projekat.model.User;
 import com.example.sr2_2020.svt2021.projekat.repository.CommentRepository;
 import com.example.sr2_2020.svt2021.projekat.repository.PostRepository;
+import com.example.sr2_2020.svt2021.projekat.repository.ReactionRepository;
 import com.example.sr2_2020.svt2021.projekat.repository.UserRepository;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.CommentService;
@@ -47,6 +51,12 @@ public class CommentServiceImpl implements CommentService {
     @Autowired
     CommentMapper commentMapper;
 
+    @Autowired
+    ReactionRepository reactionRepository;
+
+    @Autowired
+    ReactionMapper reactionMapper;
+
     @Override
     public void save(CommentDTORequest commentDTORequest, HttpServletRequest request) {
 
@@ -57,6 +67,8 @@ public class CommentServiceImpl implements CommentService {
 
         User user = userRepository.findByUsername(username).orElseThrow(() -> new
                 SpringRedditCloneException("User with username " + username + " not found"));
+
+        Comment commentToVote = null;
 
         if(commentDTORequest.getRepliedToCommentId() != null) {
 
@@ -75,15 +87,20 @@ public class CommentServiceImpl implements CommentService {
                 comment.setReplies(comment.getReplies() + "," + newComment.getCommentId().toString());
             }
 
-            commentRepository.save(comment);
+            commentToVote = commentRepository.save(comment);
 
         } else {
 
-            commentRepository.save(commentMapper.mapDTOToComment(commentDTORequest, post, user));
+            commentToVote = commentRepository.save(commentMapper.mapDTOToComment(commentDTORequest, post, user));
         }
 
 
+        ReactionDTO reactionDTO = new ReactionDTO();
 
+        reactionDTO.setReactionType(ReactionType.UPVOTE);
+        reactionDTO.setCommentId(commentToVote.getCommentId());
+
+        reactionRepository.save(reactionMapper.mapDTOToReaction(reactionDTO, post, user, null));
 
     }
 
@@ -93,8 +110,59 @@ public class CommentServiceImpl implements CommentService {
         Post post = postRepository.findById(id).orElseThrow(() -> new PostNotFoundException(
                 "Post not found for ID: " + id));
 
-        return commentRepository.findAllByPost(post).stream().map((Comment comment) ->
-                commentMapper.mapCommentToDTO(comment)).collect(Collectors.toList());
+        List<CommentDTOResponse> commentDTOResponseList = new ArrayList<>();
+
+        List<Long> childCommentsList = new ArrayList<>();
+
+        CommentMapper mapper = commentMapper;
+
+        for (Comment comment : commentRepository.findAllByPost(post)) {
+
+            // get nested replies here
+
+            List<CommentDTOResponse> replies;
+
+            List<String> commentIdReplies = List.of(comment.getReplies().split(","));
+
+            try {
+
+                List<CommentDTOResponse> list = new ArrayList<>();
+
+                commentIdReplies.forEach(commentIdReply -> {
+
+                    CommentDTOResponse commentDTOResponse = getComment(Long.valueOf(commentIdReply));
+                    list.add(commentDTOResponse);
+                    childCommentsList.add(Long.valueOf(commentIdReply));
+
+                });
+
+                replies = list;
+
+            } catch (Exception ignored) {
+
+                replies = null;
+
+            }
+
+            CommentDTOResponse commentDTOResponse = mapper.mapCommentToDTO(comment, replies);
+
+            commentDTOResponseList.add(commentDTOResponse);
+        }
+
+        for (Long commentId : childCommentsList) {
+
+            for(int i = 0; i < commentDTOResponseList.size(); i++) {
+
+                if (commentDTOResponseList.get(i).getCommentId().equals(commentId)) {
+
+                    commentDTOResponseList.remove(i);
+                }
+
+            }
+
+        }
+
+        return commentDTOResponseList;
     }
 
     @Override
@@ -128,6 +196,30 @@ public class CommentServiceImpl implements CommentService {
         commentIdsToDelete.clear();
 
         return getCommentsToDelete(id, request);
+    }
+
+    @Override
+    public CommentDTOResponse getComment(Long id) {
+
+        Comment comment = commentRepository.findById(id).orElseThrow(() -> new
+                CommentNotFoundException("Comment not found with specified commentId"));
+
+        List<CommentDTOResponse> replies;
+
+        List<String> commentIdReplies = List.of(comment.getReplies().split(","));
+
+        try {
+
+            replies = commentIdReplies.stream().map(commentIdReply ->
+                    getComment(Long.valueOf(commentIdReply))).collect(Collectors.toList());
+
+        } catch (Exception ignored) {
+
+            replies = null;
+        }
+
+        return commentMapper.mapCommentToDTO(comment, replies);
+
     }
 
     private ResponseEntity getCommentsToDelete(Long id, HttpServletRequest request) {
@@ -186,8 +278,6 @@ public class CommentServiceImpl implements CommentService {
         }
 
         commentIdsToDelete = commentIdsToDelete.stream().distinct().collect(Collectors.toList());
-
-        System.out.println("AFTER:" + commentIdsToDelete);
 
         deleteComments(commentIdsToDelete);
 

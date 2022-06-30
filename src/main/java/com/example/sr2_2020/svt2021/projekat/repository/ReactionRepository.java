@@ -1,5 +1,6 @@
 package com.example.sr2_2020.svt2021.projekat.repository;
 
+import com.example.sr2_2020.svt2021.projekat.model.Comment;
 import com.example.sr2_2020.svt2021.projekat.model.Post;
 import com.example.sr2_2020.svt2021.projekat.model.Reaction;
 import com.example.sr2_2020.svt2021.projekat.model.User;
@@ -14,6 +15,8 @@ import java.util.Optional;
 public interface ReactionRepository extends JpaRepository<Reaction, Long> {
 
     Optional<Reaction> findByPostAndUserOrderByReactionIdDesc(Post post, User user);
+
+    Optional<Reaction> findByCommentAndUserOrderByReactionIdDesc(Comment comment, User user);
 
     List<Reaction> findByUser(User user);
 

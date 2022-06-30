@@ -16,7 +16,9 @@ public class ReactionDTO {
     private Long reactionId;
     private ReactionType reactionType;
     private Long postId;
+    private Long commentId;
     private Long userId;
     private String username;
+    private Integer reactionCount;
 
 }
