@@ -23,7 +23,7 @@ public class CommentController {
     @Autowired
     CommentService commentService;
 
-    @PreAuthorize("hasAuthority('USER')")
+    
     @RequestMapping(value = "/postComment", method =  RequestMethod.POST)
     public ResponseEntity postComment(@RequestBody CommentDTORequest commentDTO, HttpServletRequest request) {
 

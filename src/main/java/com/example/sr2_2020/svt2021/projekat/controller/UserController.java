@@ -68,7 +68,7 @@ public class UserController {
 
     }
 
-    @PreAuthorize("hasAuthority('USER')")
+    
     @RequestMapping(value = "/changePassword", method = RequestMethod.PUT)
     public ResponseEntity<ChangePasswordRequest> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest,
                                                           HttpServletRequest request) {
@@ -77,7 +77,7 @@ public class UserController {
 
     }
 
-    @PreAuthorize("hasAuthority('USER')")
+    
     @RequestMapping(value = "/accountInfo")
     public ResponseEntity<UserInfoDTO> getAccountInfo(HttpServletRequest request) {
 
@@ -86,7 +86,7 @@ public class UserController {
         return new ResponseEntity<>(userService.getAccountInfo(username), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAuthority('USER')")
+    
     @RequestMapping(value = "/updateAccountInfo")
     public ResponseEntity<?> updateAccountInfo(@RequestBody UserInfoDTO userInfoDTO, HttpServletRequest request) {
 

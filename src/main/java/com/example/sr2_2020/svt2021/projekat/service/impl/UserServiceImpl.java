@@ -6,6 +6,7 @@ import com.example.sr2_2020.svt2021.projekat.dto.UserInfoDTO;
 import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneException;
 import com.example.sr2_2020.svt2021.projekat.mapper.UserMapper;
 import com.example.sr2_2020.svt2021.projekat.model.User;
+import com.example.sr2_2020.svt2021.projekat.repository.CommentRepository;
 import com.example.sr2_2020.svt2021.projekat.repository.PostRepository;
 import com.example.sr2_2020.svt2021.projekat.repository.UserRepository;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
@@ -45,6 +46,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     AuthenticationManager authenticationManager;
+
+    @Autowired
+    CommentRepository commentRepository;
 
     @Override
     public void register(RegisterRequest registerRequest) {
@@ -111,7 +115,16 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new SpringRedditCloneException(
                 "User not found with username: " + username));
 
-        int karma = postRepository.sumReactionCountByUser(user);
+        Integer postCount = postRepository.sumReactionCountByUser(user);
+        Integer commentCount = commentRepository.sumReactionCountByUser(user);
+
+        if(postCount == null)
+            postCount = 0;
+
+        if(commentCount == null)
+            commentCount = 0;
+
+        int karma = postCount + commentCount;
 
         return userMapper.mapUserInfoToDTO(user, karma);
     }

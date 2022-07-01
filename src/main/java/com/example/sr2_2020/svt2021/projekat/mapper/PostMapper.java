@@ -29,6 +29,6 @@ public abstract class PostMapper {
    // @Mapping(target = "community", source = "community")
     //@Mapping(target = "user", source = "user")
 
-    public abstract PostResponse mapToDTO(Post post);
+    public abstract PostResponse mapToDTO(Post post, Integer commentCount);
 
 }

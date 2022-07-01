@@ -10,6 +10,10 @@ import java.util.Optional;
 @Repository
 public interface CommunityRepository extends JpaRepository<Community, Long> {
 
-    Optional<Community> findByName (String communityName);
+    Optional<Community> findByNameAndIsSuspended (String communityName, Boolean isSuspended);
+
+    List<Community> findCommunitiesByIsSuspended (Boolean isSuspended);
+
+    Optional<Community> findByCommunityIdAndIsSuspended (Long id, Boolean isSuspended);
 
 }

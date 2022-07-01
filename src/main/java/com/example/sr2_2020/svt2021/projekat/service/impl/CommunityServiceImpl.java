@@ -3,8 +3,12 @@ package com.example.sr2_2020.svt2021.projekat.service.impl;
 import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTO;
 import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneException;
 import com.example.sr2_2020.svt2021.projekat.mapper.CommunityMapper;
+import com.example.sr2_2020.svt2021.projekat.model.Banned;
 import com.example.sr2_2020.svt2021.projekat.model.Community;
+import com.example.sr2_2020.svt2021.projekat.repository.BannedRepository;
 import com.example.sr2_2020.svt2021.projekat.repository.CommunityRepository;
+import com.example.sr2_2020.svt2021.projekat.repository.UserRepository;
+import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.CommunityService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +17,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
@@ -28,8 +35,19 @@ public class CommunityServiceImpl implements CommunityService {
     @Autowired
     CommunityMapper communityMapper;
 
+    @Autowired
+    TokenUtils tokenUtils;
+
+    @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    BannedRepository bannedRepository;
+
     @Override
     public CommunityDTO createCommunity(CommunityDTO communityDTO) {
+
+        communityDTO.setIsSuspended(false);
 
         Community newCommunity = communityRepository.save(communityMapper.mapDTOToCommunity(communityDTO));
 
@@ -49,13 +67,14 @@ public class CommunityServiceImpl implements CommunityService {
     @Override
     public List<CommunityDTO> getAllCommunities() {
 
-        return communityRepository.findAll().stream().map(communityMapper::mapCommunityToDTO).collect(toList());
+        return communityRepository.findCommunitiesByIsSuspended(false).stream().map(
+                communityMapper::mapCommunityToDTO).collect(toList());
     }
 
     @Override
     public CommunityDTO getCommunity(Long id) {
 
-        Community community = communityRepository.findById(id).
+        Community community = communityRepository.findByCommunityIdAndIsSuspended(id, false).
                 orElseThrow(() -> new SpringRedditCloneException("Community not found with entered ID"));
 
         return communityMapper.mapCommunityToDTO(community);
@@ -74,9 +93,29 @@ public class CommunityServiceImpl implements CommunityService {
     }
 
     @Override
-    public ResponseEntity<?> deleteById(Long id) {
+    public ResponseEntity<CommunityDTO> suspendCommunityById(CommunityDTO communityDTO, Long id,
+                                                             HttpServletRequest request) {
 
-        communityRepository.deleteById(id);
+        //TODO transfer SpringRedditClone exception to CommunityNotFoundException
+
+        Community community = communityRepository.findById(id).orElseThrow(() -> new SpringRedditCloneException("" +
+                "Community not found with entered ID"));
+
+        community.setIsSuspended(true);
+        community.setSuspendedReason(communityDTO.getSuspendedReason());
+
+        communityRepository.save(community);
+
+        String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
+
+        Banned banned = new Banned();
+
+        banned.setTimestamp(LocalDateTime.now());
+        banned.setCommunity(community);
+        banned.setUser(userRepository.findByUsername(username).orElseThrow(() -> new
+                SpringRedditCloneException("User with username " + username + " not found")));
+
+        bannedRepository.save(banned);
 
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
@@ -84,7 +123,7 @@ public class CommunityServiceImpl implements CommunityService {
     @Override
     public CommunityDTO getCommunityByName(String name) {
 
-        Community community = communityRepository.findByName(name).
+        Community community = communityRepository.findByNameAndIsSuspended(name, false).
                 orElseThrow(() -> new SpringRedditCloneException("Community not found with entered name"));
 
         return communityMapper.mapCommunityToDTO(community);

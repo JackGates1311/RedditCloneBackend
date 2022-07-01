@@ -31,7 +31,7 @@ public class CommentMapperImpl implements CommentMapper {
         commentBuilder.replies("");
         commentBuilder.post(post);
         commentBuilder.user(user);
-        commentBuilder.reactionCount(0);
+        commentBuilder.reactionCount(1); //reimplement it!
 
 
         return commentBuilder.build();

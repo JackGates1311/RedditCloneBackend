@@ -16,7 +16,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findPostsByCommunity(Community community);
 
     @Query("SELECT SUM(reactionCount) FROM Post WHERE user = ?1")
-    int sumReactionCountByUser(User user);
+    Integer sumReactionCountByUser(User user);
+
+    List<Post> findPostsByCommunity_IsSuspended(Boolean isSuspended);
 
     /*List<Post> findByUser (User user);*/
 }

@@ -68,7 +68,9 @@ public class CommentServiceImpl implements CommentService {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new
                 SpringRedditCloneException("User with username " + username + " not found"));
 
-        Comment commentToVote = null;
+        Comment commentToVote;
+
+        Comment reactionComment;
 
         if(commentDTORequest.getRepliedToCommentId() != null) {
 
@@ -87,20 +89,23 @@ public class CommentServiceImpl implements CommentService {
                 comment.setReplies(comment.getReplies() + "," + newComment.getCommentId().toString());
             }
 
-            commentToVote = commentRepository.save(comment);
+            commentRepository.save(comment);
+
+            reactionComment = newComment;
 
         } else {
 
             commentToVote = commentRepository.save(commentMapper.mapDTOToComment(commentDTORequest, post, user));
+
+            reactionComment = commentToVote;
         }
 
 
         ReactionDTO reactionDTO = new ReactionDTO();
 
         reactionDTO.setReactionType(ReactionType.UPVOTE);
-        reactionDTO.setCommentId(commentToVote.getCommentId());
 
-        reactionRepository.save(reactionMapper.mapDTOToReaction(reactionDTO, post, user, null));
+        reactionRepository.save(reactionMapper.mapDTOToReaction(reactionDTO, null, user, reactionComment));
 
     }
 
@@ -116,7 +121,7 @@ public class CommentServiceImpl implements CommentService {
 
         CommentMapper mapper = commentMapper;
 
-        for (Comment comment : commentRepository.findAllByPost(post)) {
+        for (Comment comment : commentRepository.findAllByPostAndIsDeleted(post, false)) {
 
             // get nested replies here
 
@@ -128,13 +133,12 @@ public class CommentServiceImpl implements CommentService {
 
                 List<CommentDTOResponse> list = new ArrayList<>();
 
-                commentIdReplies.forEach(commentIdReply -> {
-
+                for (String commentIdReply : commentIdReplies) {
                     CommentDTOResponse commentDTOResponse = getComment(Long.valueOf(commentIdReply));
                     list.add(commentDTOResponse);
                     childCommentsList.add(Long.valueOf(commentIdReply));
 
-                });
+                }
 
                 replies = list;
 
@@ -201,14 +205,15 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentDTOResponse getComment(Long id) {
 
-        Comment comment = commentRepository.findById(id).orElseThrow(() -> new
-                CommentNotFoundException("Comment not found with specified commentId"));
+        Comment comment = commentRepository.findByCommentIdAndIsDeleted(id, false);
 
         List<CommentDTOResponse> replies;
 
         List<String> commentIdReplies = List.of(comment.getReplies().split(","));
 
         try {
+
+            // here filter replies that not exists!
 
             replies = commentIdReplies.stream().map(commentIdReply ->
                     getComment(Long.valueOf(commentIdReply))).collect(Collectors.toList());
@@ -281,6 +286,8 @@ public class CommentServiceImpl implements CommentService {
 
         deleteComments(commentIdsToDelete);
 
+        updateCommentReplies(commentIdsToDelete);
+
         return new ResponseEntity("Comment has been successfully deleted", HttpStatus.ACCEPTED);
     }
 
@@ -296,4 +303,44 @@ public class CommentServiceImpl implements CommentService {
             commentRepository.save(comment);
         }
     }
+
+
+    private void updateCommentReplies(List<Long> commentIdsToDelete) {
+
+        //TODO fix comment glitches (little bugs*) and method
+
+        // update replies here
+
+        // get all comments
+
+        List<Comment> comments = commentRepository.findAll();
+
+        for(Comment comment : comments) {
+
+            List<String> commentReplies = List.of(comment.getReplies().split(","));
+
+            String updatedCommentReplies = "";
+
+            for(String commentReply: commentReplies) {
+
+                for(Long commentIdToDelete: commentIdsToDelete) {
+
+                    if(!commentReply.equals(commentIdToDelete.toString())) {
+
+                        updatedCommentReplies += commentReply + ",";
+                    }
+                }
+            }
+
+            if(!updatedCommentReplies.equals(""))
+                updatedCommentReplies = updatedCommentReplies.substring(0, updatedCommentReplies.length() - 1);
+
+            comment.setReplies(updatedCommentReplies);
+
+            commentRepository.save(comment);
+        }
+
+        //
+    }
+
 }

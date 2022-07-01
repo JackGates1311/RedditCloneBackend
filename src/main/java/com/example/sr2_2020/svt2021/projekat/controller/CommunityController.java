@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
@@ -24,7 +25,7 @@ public class CommunityController {
     @Autowired
     private CommunityService communityService;
 
-    @PreAuthorize("hasAuthority('USER')")
+    
     @RequestMapping(value= "/createCommunity", method = RequestMethod.POST)
     public ResponseEntity<CommunityDTO> createCommunity(@RequestBody CommunityDTO communityDTO) {
 
@@ -51,7 +52,6 @@ public class CommunityController {
         return ResponseEntity.status(HttpStatus.OK).body(communityService.getCommunityByName(name));
     }
 
-    @PreAuthorize("hasAuthority('USER')")
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
     public ResponseEntity<CommunityDTO> editCommunity(@RequestBody CommunityDTO communityDTO, @PathVariable Long id) {
 
@@ -59,10 +59,11 @@ public class CommunityController {
     }
 
     @PreAuthorize("hasAuthority('ADMINISTRATOR')")
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE) //TODO replace it with suspend community
-    public ResponseEntity<?> deleteCommunity(@PathVariable Long id) {
+    @RequestMapping(value = "/suspend/{id}", method = RequestMethod.PUT)
+    public ResponseEntity<CommunityDTO> deleteCommunity(@RequestBody CommunityDTO communityDTO,
+                                                        @PathVariable Long id, HttpServletRequest request) {
 
-        return communityService.deleteById(id);
+        return communityService.suspendCommunityById(communityDTO, id, request);
 
     }
 }

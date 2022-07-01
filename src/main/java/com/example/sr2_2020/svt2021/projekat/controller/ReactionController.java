@@ -21,7 +21,7 @@ public class ReactionController {
     @Autowired
     ReactionService reactionService;
 
-    @PreAuthorize("hasAuthority('USER')")
+    
     @RequestMapping(value = "", method = RequestMethod.POST)
     public ResponseEntity reaction(@RequestBody ReactionDTO reactionDTO, HttpServletRequest request) {
 
@@ -30,7 +30,7 @@ public class ReactionController {
         return new ResponseEntity("Your reaction has been saved", HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAuthority('USER')")
+    
     @RequestMapping(value = "")
     public ResponseEntity<List<ReactionDTO>> getReactionsByUsername(HttpServletRequest request) {
 

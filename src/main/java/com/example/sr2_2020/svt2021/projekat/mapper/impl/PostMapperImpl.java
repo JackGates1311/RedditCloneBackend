@@ -51,7 +51,7 @@ public class PostMapperImpl extends PostMapper {
     }
 
     @Override
-    public PostResponse mapToDTO(Post post) {
+    public PostResponse mapToDTO(Post post, Integer commentCount) {
 
         if(post == null)
             return null;
@@ -67,6 +67,8 @@ public class PostMapperImpl extends PostMapper {
 
         postResponse.setCommunityName(postCommunityName(post));
         postResponse.setUsername(postUserName(post));
+
+        postResponse.setCommentCount(commentCount);
 
         /* PostResponseBuilder postResponseDTO = PostResponse.builder();
 

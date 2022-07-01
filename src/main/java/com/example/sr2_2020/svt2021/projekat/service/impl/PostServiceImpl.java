@@ -14,10 +14,7 @@ import com.example.sr2_2020.svt2021.projekat.model.Community;
 import com.example.sr2_2020.svt2021.projekat.model.Post;
 import com.example.sr2_2020.svt2021.projekat.model.ReactionType;
 import com.example.sr2_2020.svt2021.projekat.model.User;
-import com.example.sr2_2020.svt2021.projekat.repository.CommunityRepository;
-import com.example.sr2_2020.svt2021.projekat.repository.PostRepository;
-import com.example.sr2_2020.svt2021.projekat.repository.ReactionRepository;
-import com.example.sr2_2020.svt2021.projekat.repository.UserRepository;
+import com.example.sr2_2020.svt2021.projekat.repository.*;
 import com.example.sr2_2020.svt2021.projekat.security.AuthTokenFilter;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.CommunityService;
@@ -75,12 +72,15 @@ public class PostServiceImpl implements PostService {
     @Autowired
     ReactionMapper reactionMapper;
 
+    @Autowired
+    CommentRepository commentRepository;
+
     @Override
     public void save(PostRequest postRequest, HttpServletRequest request) {
 
-        Community community = communityRepository.findByName(postRequest.getCommunityName()).
-                orElseThrow(() -> new CommunityNotFoundException("Community with name " + postRequest.getCommunityName()
-                        + " not found"));
+        Community community = communityRepository.findByNameAndIsSuspended(postRequest.getCommunityName(),
+                        false).orElseThrow(() -> new CommunityNotFoundException("Community with name " +
+                        postRequest.getCommunityName() + " not found"));
 
         String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
 
@@ -102,7 +102,9 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<PostResponse> getAllPosts() {
 
-        return postRepository.findAll().stream().map(postMapper::mapToDTO).collect(Collectors.toList());
+        return postRepository.findPostsByCommunity_IsSuspended(false).stream().map((Post post) ->
+                postMapper.mapToDTO(post, commentRepository.countByPostAndIsDeleted(post, false))).
+                collect(Collectors.toList());
     }
 
     @Override
@@ -110,15 +112,15 @@ public class PostServiceImpl implements PostService {
 
         Post post = postRepository.findById(id).orElseThrow(() -> new PostNotFoundException(id.toString()));
 
-        return postMapper.mapToDTO(post);
+        return postMapper.mapToDTO(post, commentRepository.countByPostAndIsDeleted(post, false));
     }
 
     @Override
     public ResponseEntity<PostRequest> editPost(PostRequest postRequest, Long id, HttpServletRequest request) {
 
-        Community community = communityRepository.findByName(postRequest.getCommunityName()).
-                orElseThrow(() -> new CommunityNotFoundException("Community with name " + postRequest.getCommunityName()
-                        + " not found"));
+        Community community = communityRepository.findByNameAndIsSuspended(postRequest.getCommunityName(),
+                        false).orElseThrow(() -> new CommunityNotFoundException("Community with name " +
+                        postRequest.getCommunityName() + " not found"));
 
         String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
 
@@ -175,7 +177,8 @@ public class PostServiceImpl implements PostService {
 
         Community community = communityMapper.mapDTOToCommunity(communityDTO);
 
-        return postRepository.findPostsByCommunity(community).stream().map(postMapper::mapToDTO).
-                collect(Collectors.toList());
+        return postRepository.findPostsByCommunity(community).stream().map((Post post) ->
+                        postMapper.mapToDTO(post, commentRepository.countByPostAndIsDeleted(post,
+                                false))).collect(Collectors.toList());
     }
 }
