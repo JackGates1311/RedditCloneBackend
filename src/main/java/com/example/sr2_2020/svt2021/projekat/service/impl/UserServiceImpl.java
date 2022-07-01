@@ -1,5 +1,6 @@
 package com.example.sr2_2020.svt2021.projekat.service.impl;
 
+import com.example.sr2_2020.svt2021.projekat.controller.CommunityController;
 import com.example.sr2_2020.svt2021.projekat.dto.ChangePasswordRequest;
 import com.example.sr2_2020.svt2021.projekat.dto.RegisterRequest;
 import com.example.sr2_2020.svt2021.projekat.dto.UserInfoDTO;
@@ -12,6 +13,8 @@ import com.example.sr2_2020.svt2021.projekat.repository.UserRepository;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.UserService;
 import lombok.AllArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +52,8 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     CommentRepository commentRepository;
+
+    static final Logger logger = LogManager.getLogger(CommunityController.class);
 
     @Override
     public void register(RegisterRequest registerRequest) {
@@ -112,6 +117,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserInfoDTO getAccountInfo(String username) {
 
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting account info ...");
+
         User user = userRepository.findByUsername(username).orElseThrow(() -> new SpringRedditCloneException(
                 "User not found with username: " + username));
 
@@ -126,11 +133,15 @@ public class UserServiceImpl implements UserService {
 
         int karma = postCount + commentCount;
 
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Saving to database ...");
+
         return userMapper.mapUserInfoToDTO(user, karma);
     }
 
     @Override
     public ResponseEntity<?> updateAccountInfo(UserInfoDTO userInfoDTO, HttpServletRequest request) {
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Updating data ...");
 
         String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
 

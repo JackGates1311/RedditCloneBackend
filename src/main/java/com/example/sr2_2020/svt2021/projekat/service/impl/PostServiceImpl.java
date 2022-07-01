@@ -1,5 +1,6 @@
 package com.example.sr2_2020.svt2021.projekat.service.impl;
 
+import com.example.sr2_2020.svt2021.projekat.controller.CommunityController;
 import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTO;
 import com.example.sr2_2020.svt2021.projekat.dto.PostRequest;
 import com.example.sr2_2020.svt2021.projekat.dto.PostResponse;
@@ -22,6 +23,8 @@ import com.example.sr2_2020.svt2021.projekat.service.PostService;
 import com.example.sr2_2020.svt2021.projekat.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +33,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -75,8 +79,12 @@ public class PostServiceImpl implements PostService {
     @Autowired
     CommentRepository commentRepository;
 
+    static final Logger logger = LogManager.getLogger(CommunityController.class);
+
     @Override
     public void save(PostRequest postRequest, HttpServletRequest request) {
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting data for saving post ...");
 
         Community community = communityRepository.findByNameAndIsSuspended(postRequest.getCommunityName(),
                         false).orElseThrow(() -> new CommunityNotFoundException("Community with name " +
@@ -96,11 +104,15 @@ public class PostServiceImpl implements PostService {
         reactionDTO.setReactionType(ReactionType.UPVOTE);
         reactionDTO.setPostId(post.getPostId());
 
+        logger.info("LOGGER: " + LocalDateTime.now() + " - saving post to database");
+
         reactionRepository.save(reactionMapper.mapDTOToReaction(reactionDTO, post, user, null));
     }
 
     @Override
     public List<PostResponse> getAllPosts() {
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting all posts in database");
 
         return postRepository.findPostsByCommunity_IsSuspended(false).stream().map((Post post) ->
                 postMapper.mapToDTO(post, commentRepository.countByPostAndIsDeleted(post, false))).
@@ -110,6 +122,8 @@ public class PostServiceImpl implements PostService {
     @Override
     public PostResponse getPost(Long id) {
 
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting post by id");
+
         Post post = postRepository.findById(id).orElseThrow(() -> new PostNotFoundException(id.toString()));
 
         return postMapper.mapToDTO(post, commentRepository.countByPostAndIsDeleted(post, false));
@@ -117,6 +131,8 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public ResponseEntity<PostRequest> editPost(PostRequest postRequest, Long id, HttpServletRequest request) {
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting post for edit ...");
 
         Community community = communityRepository.findByNameAndIsSuspended(postRequest.getCommunityName(),
                         false).orElseThrow(() -> new CommunityNotFoundException("Community with name " +
@@ -139,9 +155,13 @@ public class PostServiceImpl implements PostService {
 
             postRepository.save(post);
 
+            logger.info("LOGGER: " + LocalDateTime.now() + " - Saving post data to database...");
+
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(postRequest);
 
         } else {
+
+            logger.warn("LOGGER: " + LocalDateTime.now() + " - Trying to perform illegal operation");
 
             return new ResponseEntity("You don't have permissions to edit this post", HttpStatus.FORBIDDEN);
         }
@@ -150,6 +170,8 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public ResponseEntity<?> deleteById(Long id, HttpServletRequest request) {
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting post data...");
 
         PostResponse postResponse = getPost(id);
 
@@ -163,6 +185,8 @@ public class PostServiceImpl implements PostService {
 
         } else {
 
+            logger.warn("LOGGER: " + LocalDateTime.now() + " - Trying to perform illegal operation");
+
             return new ResponseEntity<>("You don't have permissions to delete this post", HttpStatus.FORBIDDEN);
         }
 
@@ -172,6 +196,8 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<PostResponse> getPostsByCommunityName(String communityName) {
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting post by name");
 
         CommunityDTO communityDTO = communityService.getCommunityByName(communityName);
 
