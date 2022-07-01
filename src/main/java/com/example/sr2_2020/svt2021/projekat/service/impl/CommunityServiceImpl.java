@@ -101,6 +101,7 @@ public class CommunityServiceImpl implements CommunityService {
 
         Community community = communityMapper.mapDTOToCommunity(communityDTO);
 
+        community.setIsSuspended(false);
         community.setCommunityId(communityId);
 
         communityRepository.save(community);

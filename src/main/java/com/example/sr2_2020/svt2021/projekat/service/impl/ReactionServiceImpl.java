@@ -1,5 +1,6 @@
 package com.example.sr2_2020.svt2021.projekat.service.impl;
 
+import com.example.sr2_2020.svt2021.projekat.controller.CommunityController;
 import com.example.sr2_2020.svt2021.projekat.dto.ReactionDTO;
 import com.example.sr2_2020.svt2021.projekat.exception.CommentNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.PostNotFoundException;
@@ -15,10 +16,13 @@ import com.example.sr2_2020.svt2021.projekat.service.ReactionService;
 import com.example.sr2_2020.svt2021.projekat.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -53,17 +57,22 @@ public class ReactionServiceImpl implements ReactionService {
     @Autowired
     CommentRepository commentRepository;
 
+    static final Logger logger = LogManager.getLogger(CommunityController.class);
+
     @Override
     public void reaction(ReactionDTO reactionDTO, HttpServletRequest request) {
 
         //TODO refactor this method
 
         // Method written below is for saving post reaction!
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting needed data for sending reaction");
 
         String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
 
         User user = userRepository.findByUsername(username).orElseThrow(() -> new
                 SpringRedditCloneException("User with username " + username + " not found"));
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Detecting type of reaction");
 
         if(reactionDTO.getCommentId() == null) {
 
@@ -135,6 +144,8 @@ public class ReactionServiceImpl implements ReactionService {
                 }
 
             }
+
+            logger.info("LOGGER: " + LocalDateTime.now() + " - Saving reaction to database");
 
             reactionRepository.save(reactionMapper.mapDTOToReaction(reactionDTO, post, user, null));
 
@@ -219,6 +230,8 @@ public class ReactionServiceImpl implements ReactionService {
 
     @Override
     public List<ReactionDTO> getReactionsByUsername(HttpServletRequest request) {
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting reactions by username ...");
 
         String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
 
