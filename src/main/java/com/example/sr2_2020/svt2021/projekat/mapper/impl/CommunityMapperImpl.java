@@ -1,8 +1,11 @@
 package com.example.sr2_2020.svt2021.projekat.mapper.impl;
 
+import com.example.sr2_2020.svt2021.projekat.controller.CommunityController;
 import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTO;
 import com.example.sr2_2020.svt2021.projekat.mapper.CommunityMapper;
 import com.example.sr2_2020.svt2021.projekat.model.Community;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.mapstruct.Mapper;
 import org.springframework.context.annotation.Bean;
 import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTO.CommunityDTOBuilder;
@@ -15,11 +18,19 @@ import java.time.LocalDateTime;
 @Component
 public class CommunityMapperImpl implements CommunityMapper {
 
+    static final Logger logger = LogManager.getLogger(CommunityController.class);
+
     @Override
     public CommunityDTO mapCommunityToDTO(Community community) {
 
-        if (community == null)
+        if (community == null) {
+
+            logger.error("LOGGER: " + LocalDateTime.now() + " - Community object is null");
+
             return null;
+        }
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Building new community response ...");
 
         CommunityDTOBuilder communityDTO = CommunityDTO.builder();
 
@@ -30,14 +41,22 @@ public class CommunityMapperImpl implements CommunityMapper {
         communityDTO.isSuspended(community.getIsSuspended());
         communityDTO.suspendedReason(community.getSuspendedReason());
 
+        logger.info("LOGGER: " + LocalDateTime.now() + " - New community has been successfully mapped to DTO");
+
         return communityDTO.build();
     }
 
     @Override
     public Community mapDTOToCommunity(CommunityDTO communityDTO) {
 
-        if(communityDTO == null)
+        if(communityDTO == null) {
+
+            logger.error("LOGGER: " + LocalDateTime.now() + " - CommunityDTORequest body is null");
+
             return null;
+        }
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Building new community ...");
 
         CommunityBuilder community = Community.builder();
 
@@ -47,6 +66,8 @@ public class CommunityMapperImpl implements CommunityMapper {
         community.creationDate(LocalDateTime.now());
         community.isSuspended(communityDTO.getIsSuspended());
         community.suspendedReason(communityDTO.getSuspendedReason());
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - New community has been successfully mapped to object");
 
         return community.build();
     }

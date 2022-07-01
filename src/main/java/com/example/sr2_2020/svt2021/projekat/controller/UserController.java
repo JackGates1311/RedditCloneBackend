@@ -4,6 +4,8 @@ import com.example.sr2_2020.svt2021.projekat.dto.*;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.UserService;
 import com.example.sr2_2020.svt2021.projekat.service.impl.UserServiceImpl;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/auth/")
@@ -36,8 +39,12 @@ public class UserController {
     @Autowired
     TokenUtils tokenUtils;
 
+    static final Logger logger = LogManager.getLogger(CommunityController.class);
+
     @RequestMapping(value="/register", method = RequestMethod.POST)
     public ResponseEntity<String> register(@RequestBody RegisterRequest registerRequest){
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Register method has been called");
 
         userService.register(registerRequest);
 
@@ -48,10 +55,16 @@ public class UserController {
     @RequestMapping(value="/login", method = RequestMethod.POST)
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
 
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Login method has been called");
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Authenticating user data ...");
+
         Authentication authenticateUser = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 loginRequest.getUsername(), loginRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authenticateUser);
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting token data for specified user ...");
 
         UserDetails user = (UserDetails) authenticateUser.getPrincipal();
 
@@ -73,6 +86,8 @@ public class UserController {
     public ResponseEntity<ChangePasswordRequest> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest,
                                                           HttpServletRequest request) {
 
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Change password method has been called");
+
         return userService.changePassword(changePasswordRequest, request);
 
     }
@@ -80,6 +95,8 @@ public class UserController {
     
     @RequestMapping(value = "/accountInfo")
     public ResponseEntity<UserInfoDTO> getAccountInfo(HttpServletRequest request) {
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Get account info method has been called");
 
         String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
 
@@ -89,6 +106,8 @@ public class UserController {
     
     @RequestMapping(value = "/updateAccountInfo")
     public ResponseEntity<?> updateAccountInfo(@RequestBody UserInfoDTO userInfoDTO, HttpServletRequest request) {
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Update account info method has been called");
 
         return userService.updateAccountInfo(userInfoDTO, request);
     }

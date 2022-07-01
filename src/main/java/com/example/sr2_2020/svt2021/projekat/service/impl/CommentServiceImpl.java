@@ -1,5 +1,6 @@
 package com.example.sr2_2020.svt2021.projekat.service.impl;
 
+import com.example.sr2_2020.svt2021.projekat.controller.CommunityController;
 import com.example.sr2_2020.svt2021.projekat.dto.CommentDTORequest;
 import com.example.sr2_2020.svt2021.projekat.dto.CommentDTOResponse;
 import com.example.sr2_2020.svt2021.projekat.dto.ReactionDTO;
@@ -20,12 +21,15 @@ import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.CommentService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -57,8 +61,12 @@ public class CommentServiceImpl implements CommentService {
     @Autowired
     ReactionMapper reactionMapper;
 
+    static final Logger logger = LogManager.getLogger(CommunityController.class);
+
     @Override
     public void save(CommentDTORequest commentDTORequest, HttpServletRequest request) {
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting data for saving comment ...");
 
         Post post = postRepository.findById(commentDTORequest.getPostId()).orElseThrow(() ->
                 new PostNotFoundException("Post not found for specified post id"));
@@ -71,6 +79,8 @@ public class CommentServiceImpl implements CommentService {
         Comment commentToVote;
 
         Comment reactionComment;
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Populating comment replies ...");
 
         if(commentDTORequest.getRepliedToCommentId() != null) {
 
@@ -100,12 +110,17 @@ public class CommentServiceImpl implements CommentService {
             reactionComment = commentToVote;
         }
 
+        logger.info("LOGGER: " + LocalDateTime.now() + " - saving comment to database");
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - performing automatic UPVOTE functionality");
 
         ReactionDTO reactionDTO = new ReactionDTO();
 
         reactionDTO.setReactionType(ReactionType.UPVOTE);
 
         reactionRepository.save(reactionMapper.mapDTOToReaction(reactionDTO, null, user, reactionComment));
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - saving comment to database");
 
     }
 
@@ -114,6 +129,8 @@ public class CommentServiceImpl implements CommentService {
 
         Post post = postRepository.findById(id).orElseThrow(() -> new PostNotFoundException(
                 "Post not found for ID: " + id));
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting comments by post ID");
 
         List<CommentDTOResponse> commentDTOResponseList = new ArrayList<>();
 
@@ -131,6 +148,8 @@ public class CommentServiceImpl implements CommentService {
 
             try {
 
+                logger.info("LOGGER: " + LocalDateTime.now() + " - Checking for comment replies ...");
+
                 List<CommentDTOResponse> list = new ArrayList<>();
 
                 for (String commentIdReply : commentIdReplies) {
@@ -144,6 +163,8 @@ public class CommentServiceImpl implements CommentService {
 
             } catch (Exception ignored) {
 
+                logger.info("LOGGER: " + LocalDateTime.now() + " - Comment repliies not found, setting to null");
+
                 replies = null;
 
             }
@@ -152,6 +173,8 @@ public class CommentServiceImpl implements CommentService {
 
             commentDTOResponseList.add(commentDTOResponse);
         }
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Removing child comments from JSON structure");
 
         for (Long commentId : childCommentsList) {
 
@@ -173,6 +196,8 @@ public class CommentServiceImpl implements CommentService {
     public ResponseEntity editComment(CommentDTORequest commentDTORequest, Long id,
                                       HttpServletRequest request) {
 
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting comment data ...");
+
         String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
 
         Comment commentForEdit = commentRepository.findById(id).orElseThrow(() -> new
@@ -185,9 +210,13 @@ public class CommentServiceImpl implements CommentService {
 
             commentRepository.save(commentForEdit);
 
+            logger.info("LOGGER: " + LocalDateTime.now() + " - Comments has been successfully saved");
+
             return new ResponseEntity("Comment has been successfully edited", HttpStatus.ACCEPTED);
 
         }
+
+        logger.warn("LOGGER: " + LocalDateTime.now() + " - Trying to perform illegal operation");
 
         return new ResponseEntity("You don't have permissions to edit this comment", HttpStatus.FORBIDDEN);
     }
@@ -197,6 +226,8 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public ResponseEntity deleteComment(Long id, HttpServletRequest request) {
 
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Deleting parent comments and its childs");
+
         commentIdsToDelete.clear();
 
         return getCommentsToDelete(id, request);
@@ -204,6 +235,8 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentDTOResponse getComment(Long id) {
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting comment by comment ID");
 
         Comment comment = commentRepository.findByCommentIdAndIsDeleted(id, false);
 
@@ -215,10 +248,14 @@ public class CommentServiceImpl implements CommentService {
 
             // here filter replies that not exists!
 
+            logger.info("LOGGER: " + LocalDateTime.now() + " - Trying to set comment replies");
+
             replies = commentIdReplies.stream().map(commentIdReply ->
                     getComment(Long.valueOf(commentIdReply))).collect(Collectors.toList());
 
         } catch (Exception ignored) {
+
+            logger.info("LOGGER: " + LocalDateTime.now() + " - Comment replies not found, setting to null");
 
             replies = null;
         }
@@ -253,9 +290,13 @@ public class CommentServiceImpl implements CommentService {
 
             if(parentCommentIdReplies.get(0).equals("")) {
 
+                logger.info("LOGGER: " + LocalDateTime.now() + " - Identification finished");
+
                 isFinished = true;
 
             } else {
+
+                logger.info("LOGGER: " + LocalDateTime.now() + " - Finding comment ID for delete ...");
 
                 Comment childComment;
 
@@ -286,7 +327,11 @@ public class CommentServiceImpl implements CommentService {
 
         deleteComments(commentIdsToDelete);
 
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Updating comment replies ...");
+
         updateCommentReplies(commentIdsToDelete);
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Comments are successfuly removed ...");
 
         return new ResponseEntity("Comment has been successfully deleted", HttpStatus.ACCEPTED);
     }

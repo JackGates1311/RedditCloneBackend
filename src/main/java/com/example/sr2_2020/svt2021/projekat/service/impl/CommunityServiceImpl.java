@@ -1,5 +1,6 @@
 package com.example.sr2_2020.svt2021.projekat.service.impl;
 
+import com.example.sr2_2020.svt2021.projekat.controller.CommunityController;
 import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTO;
 import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneException;
 import com.example.sr2_2020.svt2021.projekat.mapper.CommunityMapper;
@@ -12,6 +13,8 @@ import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.CommunityService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,8 +47,12 @@ public class CommunityServiceImpl implements CommunityService {
     @Autowired
     BannedRepository bannedRepository;
 
+    static final Logger logger = LogManager.getLogger(CommunityController.class);
+
     @Override
     public CommunityDTO createCommunity(CommunityDTO communityDTO) {
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting data for saving community ...");
 
         communityDTO.setIsSuspended(false);
 
@@ -60,6 +67,8 @@ public class CommunityServiceImpl implements CommunityService {
 
         // Maybe you want here to send these four parameters from front-end?!
 
+        logger.info("LOGGER: " + LocalDateTime.now() + " - saving community to database");
+
         return communityDTO;
 
     }
@@ -67,12 +76,17 @@ public class CommunityServiceImpl implements CommunityService {
     @Override
     public List<CommunityDTO> getAllCommunities() {
 
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting all communities in database");
+
         return communityRepository.findCommunitiesByIsSuspended(false).stream().map(
                 communityMapper::mapCommunityToDTO).collect(toList());
     }
 
     @Override
     public CommunityDTO getCommunity(Long id) {
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting communitiy by ID in database");
+
 
         Community community = communityRepository.findByCommunityIdAndIsSuspended(id, false).
                 orElseThrow(() -> new SpringRedditCloneException("Community not found with entered ID"));
@@ -83,11 +97,15 @@ public class CommunityServiceImpl implements CommunityService {
     @Override
     public ResponseEntity<CommunityDTO> editCommunity(CommunityDTO communityDTO, Long communityId) {
 
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting community data for edit ...");
+
         Community community = communityMapper.mapDTOToCommunity(communityDTO);
 
         community.setCommunityId(communityId);
 
         communityRepository.save(community);
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Saving community data to database...");
 
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(communityDTO);
     }
@@ -97,6 +115,8 @@ public class CommunityServiceImpl implements CommunityService {
                                                              HttpServletRequest request) {
 
         //TODO transfer SpringRedditClone exception to CommunityNotFoundException
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Fiinding community data...");
 
         Community community = communityRepository.findById(id).orElseThrow(() -> new SpringRedditCloneException("" +
                 "Community not found with entered ID"));
@@ -117,14 +137,21 @@ public class CommunityServiceImpl implements CommunityService {
 
         bannedRepository.save(banned);
 
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Saving community data to database...");
+
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
     @Override
     public CommunityDTO getCommunityByName(String name) {
 
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting community data by name...");
+
         Community community = communityRepository.findByNameAndIsSuspended(name, false).
                 orElseThrow(() -> new SpringRedditCloneException("Community not found with entered name"));
+
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Saving community data to database...");
 
         return communityMapper.mapCommunityToDTO(community);
     }
