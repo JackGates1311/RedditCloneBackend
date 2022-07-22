@@ -10,9 +10,7 @@ import com.example.sr2_2020.svt2021.projekat.model.Post.PostBuilder;
 import com.example.sr2_2020.svt2021.projekat.model.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import java.time.LocalDateTime;
 
 @Component
@@ -94,17 +92,6 @@ public class PostMapperImpl extends PostMapper {
         postResponse.setUsername(postUserName(post));
 
         postResponse.setCommentCount(commentCount);
-
-        /* PostResponseBuilder postResponseDTO = PostResponse.builder();
-
-        postResponseDTO.postId(post.getPostId());
-        postResponseDTO.creationDate(post.getCreationDate());
-        postResponseDTO.imagePath(post.getImagePath());
-        postResponseDTO.text(post.getText());
-        postResponseDTO.title(post.getTitle());
-        postResponseDTO.username(post.getUsername());
-
-        postResponseDTO.communityName(postCommunityName(post)); */
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - New post has been successfully mapped to DTO");
 

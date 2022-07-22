@@ -1,19 +1,19 @@
 package com.example.sr2_2020.svt2021.projekat.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
+import org.hibernate.Hibernate;
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
-@Data
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 @AllArgsConstructor
-@NoArgsConstructor
 @Entity
 @Builder
 public class User {
@@ -47,4 +47,23 @@ public class User {
 
     private Boolean isAdministrator;
 
+    @Override
+    public boolean equals(Object o) {
+
+        if (this == o)
+            return true;
+
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o))
+            return false;
+
+        User user = (User) o;
+
+        return userId != null && Objects.equals(userId, user.userId);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return getClass().hashCode();
+    }
 }

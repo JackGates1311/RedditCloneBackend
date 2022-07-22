@@ -8,13 +8,9 @@ import com.example.sr2_2020.svt2021.projekat.model.Post;
 import com.example.sr2_2020.svt2021.projekat.model.Reaction;
 import com.example.sr2_2020.svt2021.projekat.model.Reaction.ReactionBuilder;
 import com.example.sr2_2020.svt2021.projekat.model.User;
-import com.example.sr2_2020.svt2021.projekat.repository.UserRepository;
-import com.example.sr2_2020.svt2021.projekat.service.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import java.time.LocalDateTime;
 
 @Component

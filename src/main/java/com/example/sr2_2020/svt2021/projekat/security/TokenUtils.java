@@ -1,17 +1,12 @@
 package com.example.sr2_2020.svt2021.projekat.security;
 
-import com.sun.net.httpserver.HttpContext;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-
 import javax.servlet.http.HttpServletRequest;
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Component
@@ -38,8 +33,6 @@ public class TokenUtils {
         }
     }
 
-    ///
-
     public String getUserRoleFromToken(String token) {
 
         try {
@@ -53,9 +46,6 @@ public class TokenUtils {
             return null;
         }
     }
-
-
-    ///
 
     public Claims getClaimsFromToken(String token) {
 
@@ -79,7 +69,7 @@ public class TokenUtils {
 
         try {
 
-            final Claims claims = this.getClaimsFromToken(token); // username izvlacimo iz expiration time polja unutar payload tokena
+            final Claims claims = this.getClaimsFromToken(token);
             expirationDate = claims.getExpiration();
 
         } catch (Exception e) {
@@ -105,7 +95,7 @@ public class TokenUtils {
 
     public String generateToken(UserDetails userDetails) {
 
-        Map<String, Object> claims = new HashMap<String, Object>();
+        Map<String, Object> claims = new HashMap<>();
 
         claims.put("username", userDetails.getUsername());
         claims.put("role", userDetails.getAuthorities().toArray()[0]);

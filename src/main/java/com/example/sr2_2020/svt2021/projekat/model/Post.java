@@ -1,26 +1,22 @@
 package com.example.sr2_2020.svt2021.projekat.model;
 
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-import io.micrometer.core.lang.Nullable;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
+import org.hibernate.Hibernate;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-
+import java.util.Objects;
 import static javax.persistence.FetchType.EAGER;
-import static javax.persistence.FetchType.LAZY;
 
-@Data
+//TODO try to use Lazy loading where is possible...
+
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 @Entity
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
 public class Post {
 
     @Id
@@ -39,9 +35,6 @@ public class Post {
     @NotBlank(message = "Post title cannot be empty")
     private String title;
 
-    //@NotBlank(message = "Username cannot be empty")
-    //private String username;
-
     @ManyToOne(fetch = EAGER)
     @JoinColumn(name = "userId", referencedColumnName = "userId")
     private User user;
@@ -50,12 +43,25 @@ public class Post {
     @JoinColumn(name = "communityId", referencedColumnName = "communityId")
     private Community community;
 
-    private Integer reactionCount; //TODO Pitaj asistenta da li sme ovako?!
+    private Integer reactionCount;
 
-    /*@ManyToOne(fetch = LAZY)
-    private User user;
+    @Override
+    public boolean equals(Object o) {
 
-    @ManyToOne(fetch = LAZY)
-    private Community community;*/
+        if (this == o)
+            return true;
 
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o))
+            return false;
+
+        Post post = (Post) o;
+
+        return postId != null && Objects.equals(postId, post.postId);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return getClass().hashCode();
+    }
 }

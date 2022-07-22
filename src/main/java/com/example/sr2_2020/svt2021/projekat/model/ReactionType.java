@@ -1,16 +1,18 @@
 package com.example.sr2_2020.svt2021.projekat.model;
 
 import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneException;
-
 import java.util.Arrays;
 
 public enum ReactionType {
 
     UPVOTE(1), DOWNVOTE(-1);
 
-    private int direction;
+    private final int direction;
 
-    ReactionType(int direction) {}
+    ReactionType(int direction) {
+
+        this.direction = direction;
+    }
 
     public static ReactionType find(Integer direction) {
 

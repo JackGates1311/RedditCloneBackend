@@ -29,8 +29,7 @@ import static org.springframework.web.servlet.function.ServerResponse.status;
 @AllArgsConstructor
 public class PostController {
 
-    @Autowired
-    PostService postService;
+    private final PostService postService;
 
     static final Logger logger = LogManager.getLogger(CommunityController.class);
     

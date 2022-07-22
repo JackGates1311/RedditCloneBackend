@@ -21,8 +21,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ReactionController {
 
-    @Autowired
-    ReactionService reactionService;
+    private final ReactionService reactionService;
 
     static final Logger logger = LogManager.getLogger(CommunityController.class);
     

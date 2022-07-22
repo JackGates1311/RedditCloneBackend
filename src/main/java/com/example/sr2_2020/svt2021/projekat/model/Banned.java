@@ -1,15 +1,17 @@
 package com.example.sr2_2020.svt2021.projekat.model;
 
 import lombok.*;
-
+import org.hibernate.Hibernate;
 import javax.persistence.*;
 import java.time.LocalDateTime;
-
+import java.util.Objects;
 import static javax.persistence.FetchType.EAGER;
 
-@Data
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 @AllArgsConstructor
-@NoArgsConstructor
 @Entity
 @Builder
 public class Banned {
@@ -27,4 +29,25 @@ public class Banned {
     @ManyToOne(fetch = EAGER)
     @JoinColumn(name = "userId", referencedColumnName = "userId")
     private User user;
+
+    @Override
+    public boolean equals(Object o) {
+
+        if (this == o)
+            return true;
+
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o))
+            return false;
+
+        Banned banned = (Banned) o;
+
+        return bannedId != null && Objects.equals(bannedId, banned.bannedId);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return getClass().hashCode();
+    }
+
 }

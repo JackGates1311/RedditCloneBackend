@@ -10,7 +10,8 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface ReactionMapper {
 
-    public Reaction mapDTOToReaction (ReactionDTO reactionDTO, Post post, User user, Comment comment);
+    Reaction mapDTOToReaction (ReactionDTO reactionDTO, Post post, User user, Comment comment);
 
-    public ReactionDTO mapToDTO(Reaction reaction);
+    ReactionDTO mapToDTO(Reaction reaction);
+
 }

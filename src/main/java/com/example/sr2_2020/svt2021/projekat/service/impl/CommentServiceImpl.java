@@ -23,11 +23,9 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -40,26 +38,19 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CommentServiceImpl implements CommentService {
 
-    @Autowired
-    PostRepository postRepository;
+    private final PostRepository postRepository;
 
-    @Autowired
-    UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    TokenUtils tokenUtils;
+    private final TokenUtils tokenUtils;
 
-    @Autowired
-    CommentRepository commentRepository;
+    private final CommentRepository commentRepository;
 
-    @Autowired
-    CommentMapper commentMapper;
+    private final CommentMapper commentMapper;
 
-    @Autowired
-    ReactionRepository reactionRepository;
+    private final ReactionRepository reactionRepository;
 
-    @Autowired
-    ReactionMapper reactionMapper;
+    private final  ReactionMapper reactionMapper;
 
     static final Logger logger = LogManager.getLogger(CommunityController.class);
 
@@ -136,8 +127,6 @@ public class CommentServiceImpl implements CommentService {
 
         List<Long> childCommentsList = new ArrayList<>();
 
-        CommentMapper mapper = commentMapper;
-
         for (Comment comment : commentRepository.findAllByPostAndIsDeleted(post, false)) {
 
             // get nested replies here
@@ -163,13 +152,13 @@ public class CommentServiceImpl implements CommentService {
 
             } catch (Exception ignored) {
 
-                logger.info("LOGGER: " + LocalDateTime.now() + " - Comment repliies not found, setting to null");
+                logger.info("LOGGER: " + LocalDateTime.now() + " - Comment replies not found, setting to null");
 
                 replies = null;
 
             }
 
-            CommentDTOResponse commentDTOResponse = mapper.mapCommentToDTO(comment, replies);
+            CommentDTOResponse commentDTOResponse = commentMapper.mapCommentToDTO(comment, replies);
 
             commentDTOResponseList.add(commentDTOResponse);
         }
@@ -182,7 +171,7 @@ public class CommentServiceImpl implements CommentService {
 
                 if (commentDTOResponseList.get(i).getCommentId().equals(commentId)) {
 
-                    commentDTOResponseList.remove(i);
+                    commentDTOResponseList.remove(i); // TODO fix this
                 }
 
             }
@@ -193,8 +182,8 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public ResponseEntity editComment(CommentDTORequest commentDTORequest, Long id,
-                                      HttpServletRequest request) {
+    public ResponseEntity<String> editComment(CommentDTORequest commentDTORequest, Long id,
+                                              HttpServletRequest request) {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Getting comment data ...");
 
@@ -212,21 +201,22 @@ public class CommentServiceImpl implements CommentService {
 
             logger.info("LOGGER: " + LocalDateTime.now() + " - Comments has been successfully saved");
 
-            return new ResponseEntity("Comment has been successfully edited", HttpStatus.ACCEPTED);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Comment has been successfully edited");
 
         }
 
         logger.warn("LOGGER: " + LocalDateTime.now() + " - Trying to perform illegal operation");
 
-        return new ResponseEntity("You don't have permissions to edit this comment", HttpStatus.FORBIDDEN);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You don't have permissions to edit this comment");
+
     }
 
     List<Long> commentIdsToDelete;
 
     @Override
-    public ResponseEntity deleteComment(Long id, HttpServletRequest request) {
+    public ResponseEntity<String> deleteComment(Long id, HttpServletRequest request) {
 
-        logger.info("LOGGER: " + LocalDateTime.now() + " - Deleting parent comments and its childs");
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Deleting parent comments and its child elements");
 
         commentIdsToDelete.clear();
 
@@ -264,7 +254,7 @@ public class CommentServiceImpl implements CommentService {
 
     }
 
-    private ResponseEntity getCommentsToDelete(Long id, HttpServletRequest request) {
+    private ResponseEntity<String> getCommentsToDelete(Long id, HttpServletRequest request) {
 
         boolean isFinished = false;
         boolean isParentComment = true;
@@ -278,8 +268,8 @@ public class CommentServiceImpl implements CommentService {
 
             if(!Objects.equals(parentComment.getUser().getUsername(), username) && isParentComment) {
 
-                return new ResponseEntity("You don't have permissions to delete this comment",
-                        HttpStatus.FORBIDDEN);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        "You don't have permissions to delete this comment");
             }
 
             isParentComment = false;
@@ -331,9 +321,10 @@ public class CommentServiceImpl implements CommentService {
 
         updateCommentReplies(commentIdsToDelete);
 
-        logger.info("LOGGER: " + LocalDateTime.now() + " - Comments are successfuly removed ...");
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Comments are successfully removed ...");
 
-        return new ResponseEntity("Comment has been successfully deleted", HttpStatus.ACCEPTED);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body("Comment has been successfully deleted");
+
     }
 
     private void deleteComments(List<Long> commentIdsToDelete) {
@@ -364,7 +355,7 @@ public class CommentServiceImpl implements CommentService {
 
             List<String> commentReplies = List.of(comment.getReplies().split(","));
 
-            String updatedCommentReplies = "";
+            StringBuilder updatedCommentRepliesBuilder = new StringBuilder();
 
             for(String commentReply: commentReplies) {
 
@@ -372,10 +363,12 @@ public class CommentServiceImpl implements CommentService {
 
                     if(!commentReply.equals(commentIdToDelete.toString())) {
 
-                        updatedCommentReplies += commentReply + ",";
+                        updatedCommentRepliesBuilder.append(commentReply).append(",");
                     }
                 }
             }
+
+            String updatedCommentReplies = updatedCommentRepliesBuilder.toString();
 
             if(!updatedCommentReplies.equals(""))
                 updatedCommentReplies = updatedCommentReplies.substring(0, updatedCommentReplies.length() - 1);

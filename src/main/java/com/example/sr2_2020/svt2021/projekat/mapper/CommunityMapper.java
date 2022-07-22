@@ -1,8 +1,7 @@
 package com.example.sr2_2020.svt2021.projekat.mapper;
+
 import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTO;
 import com.example.sr2_2020.svt2021.projekat.model.Community;
-import com.example.sr2_2020.svt2021.projekat.model.Post;
-import org.mapstruct.BeanMapping;
 import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

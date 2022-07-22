@@ -3,18 +3,13 @@ package com.example.sr2_2020.svt2021.projekat.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -22,11 +17,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Autowired
-    private UserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
 
-    @Autowired
-    private EncoderConfig encoderConfig;
+    private final EncoderConfig encoderConfig;
+
+    public SecurityConfig(UserDetailsService userDetailsService, EncoderConfig encoderConfig) {
+
+        this.userDetailsService = userDetailsService;
+        this.encoderConfig = encoderConfig;
+    }
 
     @Autowired
     public void configureAuthentication(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
@@ -62,14 +61,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         httpSecurity.headers().frameOptions().disable();
 
-        // In line below, we can exclude some requests from auth (enables entered links for guest)
-
         httpSecurity.csrf().disable().authorizeHttpRequests().
                 antMatchers("/api/auth/**", "/api/posts/getAllPosts", "/api/communities/name={name}",
                         "/api/posts/communityName={communityName}", "/api/communities/getAllCommunities",
                         "/api/posts/{id}", "/api/comments/getPostComments/{id}", "/api/comments/{id}").
-                permitAll().anyRequest().
-                authenticated();
+                permitAll().anyRequest().authenticated();
 
         httpSecurity.addFilterBefore(authTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
     }

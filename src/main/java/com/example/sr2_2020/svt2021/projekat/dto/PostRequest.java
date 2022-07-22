@@ -1,12 +1,8 @@
 package com.example.sr2_2020.svt2021.projekat.dto;
 
-import com.example.sr2_2020.svt2021.projekat.model.Community;
-import com.example.sr2_2020.svt2021.projekat.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -19,8 +15,6 @@ public class PostRequest {
     private String imagePath;
     private String text;
     private String title;
-
     private Integer reactionCount;
-
 
 }

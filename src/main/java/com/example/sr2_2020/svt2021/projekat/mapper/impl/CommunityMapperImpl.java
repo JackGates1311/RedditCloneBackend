@@ -6,13 +6,9 @@ import com.example.sr2_2020.svt2021.projekat.mapper.CommunityMapper;
 import com.example.sr2_2020.svt2021.projekat.model.Community;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.mapstruct.Mapper;
-import org.springframework.context.annotation.Bean;
 import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTO.CommunityDTOBuilder;
 import com.example.sr2_2020.svt2021.projekat.model.Community.CommunityBuilder;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Repository;
-
 import java.time.LocalDateTime;
 
 @Component

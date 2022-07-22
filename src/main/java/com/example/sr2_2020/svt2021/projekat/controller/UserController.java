@@ -4,6 +4,7 @@ import com.example.sr2_2020.svt2021.projekat.dto.*;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.UserService;
 import com.example.sr2_2020.svt2021.projekat.service.impl.UserServiceImpl;
+import lombok.AllArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,19 +26,16 @@ import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/auth/")
+@AllArgsConstructor
 public class UserController {
 
-    @Autowired
-    UserService userService;
+    private final UserService userService;
 
-    @Autowired
-    UserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
 
-    @Autowired
-    AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    TokenUtils tokenUtils;
+    private final TokenUtils tokenUtils;
 
     static final Logger logger = LogManager.getLogger(CommunityController.class);
 
@@ -73,9 +71,6 @@ public class UserController {
         int expiresIn = tokenUtils.getExpiredIn();
 
         String role = tokenUtils.getUserRoleFromToken(jwtToken);
-
-        //System.out.println("CLAIMS: " + tokenUtils.getClaimsFromToken(jwtToken));
-        //System.out.println("ROLES: " + tokenUtils.getUserRoleFromToken(jwtToken));
 
         return ResponseEntity.ok(new AuthResponse(jwtToken, expiresIn, role));
 

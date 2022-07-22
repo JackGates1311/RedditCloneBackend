@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,9 +17,6 @@ public class CommunityDTO {
     private String creationDate;
     private Boolean isSuspended;
     private String suspendedReason;
-
-    ////
     private int numberOfPosts;
-
 
 }

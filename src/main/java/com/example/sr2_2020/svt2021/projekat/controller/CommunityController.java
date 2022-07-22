@@ -25,8 +25,7 @@ import java.util.List;
 @Slf4j
 public class CommunityController {
 
-    @Autowired
-    private CommunityService communityService;
+    private final CommunityService communityService;
 
     static final Logger logger = LogManager.getLogger(CommunityController.class);
 

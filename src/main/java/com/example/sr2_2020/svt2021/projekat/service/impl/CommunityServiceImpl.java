@@ -15,15 +15,12 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
@@ -32,20 +29,15 @@ import static java.util.stream.Collectors.toList;
 @Slf4j
 public class CommunityServiceImpl implements CommunityService {
 
-    @Autowired
-    CommunityRepository communityRepository;
+    private final CommunityRepository communityRepository;
 
-    @Autowired
-    CommunityMapper communityMapper;
+    private final CommunityMapper communityMapper;
 
-    @Autowired
-    TokenUtils tokenUtils;
+    private final TokenUtils tokenUtils;
 
-    @Autowired
-    UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    BannedRepository bannedRepository;
+    private final BannedRepository bannedRepository;
 
     static final Logger logger = LogManager.getLogger(CommunityController.class);
 
@@ -85,7 +77,7 @@ public class CommunityServiceImpl implements CommunityService {
     @Override
     public CommunityDTO getCommunity(Long id) {
 
-        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting communitiy by ID in database");
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting community by ID in database");
 
 
         Community community = communityRepository.findByCommunityIdAndIsSuspended(id, false).
@@ -117,7 +109,7 @@ public class CommunityServiceImpl implements CommunityService {
 
         //TODO transfer SpringRedditClone exception to CommunityNotFoundException
 
-        logger.info("LOGGER: " + LocalDateTime.now() + " - Fiinding community data...");
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Finding community data...");
 
         Community community = communityRepository.findById(id).orElseThrow(() -> new SpringRedditCloneException("" +
                 "Community not found with entered ID"));
@@ -157,18 +149,4 @@ public class CommunityServiceImpl implements CommunityService {
         return communityMapper.mapCommunityToDTO(community);
     }
 
-    /* private CommunityDTO mapToDTO(Community community) {
-
-        return CommunityDTO.builder().communityId(community.getCommunityId()).name(community.getName())
-                .description(community.getDescription()).creationDate(LocalDateTime.now()).
-                isSuspended(community.getIsSuspended()).suspendedReason(community.getSuspendedReason()).build();
-    }
-
-    private Community mapCommunityDTO(CommunityDTO communityDTO) {
-
-       return Community.builder().communityId(communityDTO.getCommunityId()).name(communityDTO.getName())
-                .description(communityDTO.getDescription()).creationDate(communityDTO.getCreationDate()).
-               isSuspended(communityDTO.getIsSuspended()).suspendedReason(communityDTO.getSuspendedReason()).build();
-
-    } */
 }

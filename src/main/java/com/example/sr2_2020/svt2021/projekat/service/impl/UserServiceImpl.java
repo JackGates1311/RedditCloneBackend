@@ -13,9 +13,9 @@ import com.example.sr2_2020.svt2021.projekat.repository.UserRepository;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.UserService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,14 +26,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Optional;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class UserServiceImpl implements UserService {
 
     private final PasswordEncoder passwordEncoder;
@@ -44,14 +43,11 @@ public class UserServiceImpl implements UserService {
 
     private final PostRepository postRepository;
 
-    @Autowired
-    TokenUtils tokenUtils;
+    private final TokenUtils tokenUtils;
 
-    @Autowired
-    AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    CommentRepository commentRepository;
+    private final CommentRepository commentRepository;
 
     static final Logger logger = LogManager.getLogger(CommunityController.class);
 
@@ -156,7 +152,7 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
 
-        return new ResponseEntity<>("Account info has been succesfully changed", HttpStatus.ACCEPTED);
+        return new ResponseEntity<>("Account info has been successfully changed", HttpStatus.ACCEPTED);
 
     }
 

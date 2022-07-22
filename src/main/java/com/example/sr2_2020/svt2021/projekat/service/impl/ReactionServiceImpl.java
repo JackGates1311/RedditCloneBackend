@@ -13,22 +13,17 @@ import com.example.sr2_2020.svt2021.projekat.repository.ReactionRepository;
 import com.example.sr2_2020.svt2021.projekat.repository.UserRepository;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.ReactionService;
-import com.example.sr2_2020.svt2021.projekat.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static com.example.sr2_2020.svt2021.projekat.model.ReactionType.DOWNVOTE;
 import static com.example.sr2_2020.svt2021.projekat.model.ReactionType.UPVOTE;
 
 @Service
@@ -36,26 +31,17 @@ import static com.example.sr2_2020.svt2021.projekat.model.ReactionType.UPVOTE;
 @Slf4j
 public class ReactionServiceImpl implements ReactionService {
 
-    @Autowired
-    PostRepository postRepository;
+    private final PostRepository postRepository;
 
-    @Autowired
-    ReactionMapper reactionMapper;
+    private final ReactionMapper reactionMapper;
 
-    @Autowired
-    ReactionRepository reactionRepository;
+    private final ReactionRepository reactionRepository;
 
-    @Autowired
-    TokenUtils tokenUtils;
+    private final TokenUtils tokenUtils;
 
-    @Autowired
-    UserService userService;
+    private final UserRepository userRepository;
 
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    CommentRepository commentRepository;
+    private final CommentRepository commentRepository;
 
     static final Logger logger = LogManager.getLogger(CommunityController.class);
 
@@ -84,7 +70,7 @@ public class ReactionServiceImpl implements ReactionService {
 
             // da li reakcija na navedeni post postoji od strane istog korisnika?
 
-            if(!reactionRepository.findByPostAndUserOrderByReactionIdDesc(post, user).isEmpty()) {
+            if(reactionRepository.findByPostAndUserOrderByReactionIdDesc(post, user).isPresent()) {
 
                 reactionDTO.setReactionId(reactionByPostAndUser.get().getReactionId());
 
@@ -159,7 +145,7 @@ public class ReactionServiceImpl implements ReactionService {
             Optional<Reaction> reactionByCommentAndUser =
                     reactionRepository.findByCommentAndUserOrderByReactionIdDesc(comment, user);
 
-            if(!reactionRepository.findByCommentAndUserOrderByReactionIdDesc(comment, user).isEmpty()) {
+            if(reactionRepository.findByCommentAndUserOrderByReactionIdDesc(comment, user).isPresent()) {
 
                 reactionDTO.setReactionId(reactionByCommentAndUser.get().getReactionId());
 
