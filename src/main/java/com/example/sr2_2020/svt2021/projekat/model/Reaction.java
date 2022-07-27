@@ -6,7 +6,6 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.LazyToOne;
 import org.hibernate.annotations.LazyToOneOption;
-
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -28,24 +27,18 @@ public class Reaction {
 
     private LocalDateTime timestamp;
 
-    /*@ManyToOne(cascade = CascadeType.MERGE ,targetEntity = Post.class, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = CascadeType.MERGE ,targetEntity = Post.class, fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
     @JoinColumn(name = "postId", referencedColumnName = "postId")
     @LazyToOne(LazyToOneOption.PROXY)
-    @ToString.Exclude*/
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "postId", referencedColumnName = "postId")
+    @ToString.Exclude
     private Post post;
 
-    /*@ManyToOne(cascade = CascadeType.MERGE ,targetEntity = Comment.class, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = CascadeType.MERGE ,targetEntity = Comment.class, fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
     @JoinColumn(name = "commentId", referencedColumnName = "commentId")
     @LazyToOne(LazyToOneOption.PROXY)
-    @ToString.Exclude*/
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "commentId", referencedColumnName = "commentId")
+    @ToString.Exclude
     private Comment comment;
 
     @ManyToOne(cascade = CascadeType.MERGE ,targetEntity = User.class, fetch = FetchType.LAZY)
@@ -67,11 +60,13 @@ public class Reaction {
         Reaction reaction = (Reaction) o;
 
         return reactionId != null && Objects.equals(reactionId, reaction.reactionId);
+
     }
 
     @Override
     public int hashCode() {
 
         return getClass().hashCode();
+
     }
 }
