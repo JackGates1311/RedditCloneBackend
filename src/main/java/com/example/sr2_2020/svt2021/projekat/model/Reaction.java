@@ -27,14 +27,14 @@ public class Reaction {
 
     private LocalDateTime timestamp;
 
-    @ManyToOne(cascade = CascadeType.MERGE ,targetEntity = Post.class, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = CascadeType.REFRESH ,targetEntity = Post.class, fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
     @JoinColumn(name = "postId", referencedColumnName = "postId")
     @LazyToOne(LazyToOneOption.PROXY)
     @ToString.Exclude
     private Post post;
 
-    @ManyToOne(cascade = CascadeType.MERGE ,targetEntity = Comment.class, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = CascadeType.REFRESH ,targetEntity = Comment.class, fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
     @JoinColumn(name = "commentId", referencedColumnName = "commentId")
     @LazyToOne(LazyToOneOption.PROXY)
