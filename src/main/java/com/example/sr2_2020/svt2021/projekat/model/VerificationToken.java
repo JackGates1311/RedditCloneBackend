@@ -2,11 +2,9 @@ package com.example.sr2_2020.svt2021.projekat.model;
 
 import lombok.*;
 import org.hibernate.Hibernate;
-
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Objects;
-
 import static javax.persistence.FetchType.LAZY;
 
 @Getter

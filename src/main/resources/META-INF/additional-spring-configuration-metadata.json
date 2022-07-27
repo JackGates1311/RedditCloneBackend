@@ -4,5 +4,10 @@
       "name": "spring.datasource.initialize",
       "type": "java.lang.String",
       "description": "Description for spring.datasource.initialize."
-  }
-] }
+    },
+    {
+      "name": "hibernate.enhancer.enableDirtyTracking",
+      "type": "java.lang.String",
+      "description": "Description for hibernate.enhancer.enableDirtyTracking."
+    }
+  ] }

@@ -111,9 +111,9 @@ public class ReactionServiceImpl implements ReactionService {
 
                 if(reactionsByObjectAndUser.get().getReactionType().equals(reactionDTO.getReactionType())) {
 
-                    reactionDTO.setReactionType(null);
+                    setReactionCount(reactionDTO, post, comment, -1);
 
-                    setReactionCount(reactionDTO, post, comment, 1);
+                    reactionDTO.setReactionType(null);
 
                 } else {
 
@@ -137,7 +137,7 @@ public class ReactionServiceImpl implements ReactionService {
 
     }
 
-    private void setReactionCount(ReactionDTO reactionDTO, Post post, Comment comment, Integer step) {
+    private void setReactionCount(ReactionDTO reactionDTO,Post post, Comment comment, Integer step) {
 
         Integer reactionCount;
 
@@ -148,15 +148,10 @@ public class ReactionServiceImpl implements ReactionService {
 
         int newReactionCount;
 
-        if(UPVOTE.equals(reactionDTO.getReactionType())) {
-
-            newReactionCount = reactionCount - step;
-
-        } else {
-
+        if(UPVOTE.equals(reactionDTO.getReactionType()))
             newReactionCount = reactionCount + step;
-
-        }
+        else
+            newReactionCount = reactionCount - step;
 
         updateReactionCount(post, comment, newReactionCount);
 

@@ -2,11 +2,14 @@ package com.example.sr2_2020.svt2021.projekat.model;
 
 import lombok.*;
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.LazyToOne;
+import org.hibernate.annotations.LazyToOneOption;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import static javax.persistence.FetchType.EAGER;
 
 @Getter
 @Setter
@@ -32,12 +35,18 @@ public class Comment {
 
     private String replies;
 
-    @ManyToOne(fetch = EAGER)
+    @ManyToOne(cascade = CascadeType.MERGE ,targetEntity = Post.class, fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
     @JoinColumn(name = "postId", referencedColumnName = "postId")
+    @LazyToOne(LazyToOneOption.PROXY)
+    @ToString.Exclude
     private Post post;
 
-    @ManyToOne(fetch = EAGER)
+    @ManyToOne(cascade = CascadeType.MERGE ,targetEntity = User.class, fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
     @JoinColumn(name = "userId", referencedColumnName = "userId")
+    @LazyToOne(LazyToOneOption.PROXY)
+    @ToString.Exclude
     private User user;
 
     private Integer reactionCount;

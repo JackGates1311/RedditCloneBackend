@@ -2,10 +2,14 @@ package com.example.sr2_2020.svt2021.projekat.model;
 
 import lombok.*;
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.LazyToOne;
+import org.hibernate.annotations.LazyToOneOption;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import static javax.persistence.FetchType.EAGER;
 
 @Getter
 @Setter
@@ -22,12 +26,18 @@ public class Banned {
 
     private LocalDateTime timestamp;
 
-    @ManyToOne(fetch = EAGER)
+    @ManyToOne(cascade = CascadeType.MERGE ,targetEntity = Community.class, fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
     @JoinColumn(name = "communityId", referencedColumnName = "communityId")
+    @LazyToOne(LazyToOneOption.PROXY)
+    @ToString.Exclude
     private Community community;
 
-    @ManyToOne(fetch = EAGER)
+    @ManyToOne(cascade = CascadeType.MERGE ,targetEntity = User.class, fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
     @JoinColumn(name = "userId", referencedColumnName = "userId")
+    @LazyToOne(LazyToOneOption.PROXY)
+    @ToString.Exclude
     private User user;
 
     @Override

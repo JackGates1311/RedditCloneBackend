@@ -167,14 +167,7 @@ public class CommentServiceImpl implements CommentService {
 
         for (Long commentId : childCommentsList) {
 
-            for(int i = 0; i < commentDTOResponseList.size(); i++) {
-
-                if (commentDTOResponseList.get(i).getCommentId().equals(commentId)) {
-
-                    commentDTOResponseList.remove(i); // TODO fix this
-                }
-
-            }
+            commentDTOResponseList.removeIf(response -> response.getCommentId().equals(commentId));
 
         }
 
