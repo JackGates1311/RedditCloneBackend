@@ -1,20 +1,15 @@
 package com.example.sr2_2020.svt2021.projekat.controller;
 
 import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTO;
-import com.example.sr2_2020.svt2021.projekat.mapper.CommunityMapper;
-import com.example.sr2_2020.svt2021.projekat.model.Community;
-import com.example.sr2_2020.svt2021.projekat.repository.CommunityRepository;
 import com.example.sr2_2020.svt2021.projekat.service.CommunityService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,13 +25,13 @@ public class CommunityController {
     static final Logger logger = LogManager.getLogger(CommunityController.class);
 
     @RequestMapping(value= "/createCommunity", method = RequestMethod.POST)
-    public ResponseEntity<CommunityDTO> createCommunity(@RequestBody CommunityDTO communityDTO) {
+    public ResponseEntity<String> createCommunity(@RequestBody CommunityDTO communityDTO) {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Create community method has been called");
 
         communityService.createCommunity(communityDTO);
 
-        return new ResponseEntity("Community is successfully created", HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Community is successfully created");
     }
 
     @RequestMapping("/getAllCommunities")
