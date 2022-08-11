@@ -9,10 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.InputStream;
 
 @RestController
 @RequestMapping("/api/file")
@@ -41,10 +39,8 @@ public class FileController {
     public void getFile(@PathVariable("filename") String filename, HttpServletResponse response) throws
             IOException {
 
-        InputStream file = this.fileService.getFile(savePath, filename);
-
         response.setContentType(MediaType.IMAGE_JPEG_VALUE);
 
-        StreamUtils.copy(file, response.getOutputStream());
+        StreamUtils.copy(this.fileService.getFile(savePath, filename), response.getOutputStream());
     }
 }
