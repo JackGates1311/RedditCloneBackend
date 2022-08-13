@@ -12,7 +12,7 @@ public class PostRequest {
     private Long postId;
     private String communityName;
     private String creationDate;
-    private String imagePath;
+    //private String imagePath;
     private String text;
     private String title;
     private Integer reactionCount;

@@ -11,10 +11,7 @@ import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneExceptio
 import com.example.sr2_2020.svt2021.projekat.mapper.CommunityMapper;
 import com.example.sr2_2020.svt2021.projekat.mapper.PostMapper;
 import com.example.sr2_2020.svt2021.projekat.mapper.ReactionMapper;
-import com.example.sr2_2020.svt2021.projekat.model.Community;
-import com.example.sr2_2020.svt2021.projekat.model.Post;
-import com.example.sr2_2020.svt2021.projekat.model.ReactionType;
-import com.example.sr2_2020.svt2021.projekat.model.User;
+import com.example.sr2_2020.svt2021.projekat.model.*;
 import com.example.sr2_2020.svt2021.projekat.repository.*;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.CommunityService;
@@ -58,8 +55,9 @@ public class PostServiceImpl implements PostService {
 
     private final CommentRepository commentRepository;
 
-    static final Logger logger = LogManager.getLogger(CommunityController.class);
+    private final FileRepository fileRepository;
 
+    static final Logger logger = LogManager.getLogger(CommunityController.class);
     @Override
     public void save(PostRequest postRequest, HttpServletRequest request) {
 
@@ -94,8 +92,8 @@ public class PostServiceImpl implements PostService {
         logger.info("LOGGER: " + LocalDateTime.now() + " - Getting all posts in database");
 
         return postRepository.findPostsByCommunity_IsSuspended(false).stream().map((Post post) ->
-                postMapper.mapToDTO(post, commentRepository.countByPostAndIsDeleted(post, false))).
-                collect(Collectors.toList());
+                postMapper.mapToDTO(post, commentRepository.countByPostAndIsDeleted(post, false),
+                        fileRepository.findFilenameByPost(post))).collect(Collectors.toList());
     }
 
     @Override
@@ -105,7 +103,8 @@ public class PostServiceImpl implements PostService {
 
         Post post = postRepository.findById(id).orElseThrow(() -> new PostNotFoundException(id.toString()));
 
-        return postMapper.mapToDTO(post, commentRepository.countByPostAndIsDeleted(post, false));
+        return postMapper.mapToDTO(post, commentRepository.countByPostAndIsDeleted(post, false),
+                fileRepository.findFilenameByPost(post));
     }
 
     @Override
@@ -185,6 +184,6 @@ public class PostServiceImpl implements PostService {
 
         return postRepository.findPostsByCommunity(community).stream().map((Post post) ->
                         postMapper.mapToDTO(post, commentRepository.countByPostAndIsDeleted(post,
-                                false))).collect(Collectors.toList());
+                                false), fileRepository.findFilenameByPost(post))).collect(Collectors.toList());
     }
 }

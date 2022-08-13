@@ -12,7 +12,7 @@ public interface UserMapper {
 
     User mapDTOToUser(RegisterRequest registerRequest);
 
-    UserInfoDTO mapUserInfoToDTO(User user, int karma);
+    UserInfoDTO mapUserInfoToDTO(User user, int karma, String avatar);
 
     User mapDTOToUser (UserInfoDTO userInfoDTO);
 

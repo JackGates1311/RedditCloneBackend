@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 public class CommunityMapperImpl implements CommunityMapper {
 
     static final Logger logger = LogManager.getLogger(CommunityController.class);
-
     @Override
     public CommunityDTO mapCommunityToDTO(Community community) {
 

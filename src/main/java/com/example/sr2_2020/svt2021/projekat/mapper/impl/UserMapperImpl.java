@@ -36,7 +36,7 @@ public class UserMapperImpl implements UserMapper {
         registerRequest.username(user.getUsername());
         registerRequest.password(user.getPassword());
         registerRequest.email(user.getEmail());
-        registerRequest.avatar(user.getAvatar());
+        //registerRequest.avatar(user.getAvatar());
         registerRequest.description(user.getDescription());
         registerRequest.displayName(user.getDisplayName());
 
@@ -60,7 +60,7 @@ public class UserMapperImpl implements UserMapper {
         user.username(registerRequest.getUsername());
         user.password(registerRequest.getPassword());
         user.email(registerRequest.getEmail());
-        user.avatar(registerRequest.getAvatar());
+        //user.avatar(registerRequest.getAvatar());
         user.description(registerRequest.getDescription());
         user.displayName(registerRequest.getDisplayName());
 
@@ -70,7 +70,7 @@ public class UserMapperImpl implements UserMapper {
     }
 
     @Override
-    public UserInfoDTO mapUserInfoToDTO(User user, int karma) {
+    public UserInfoDTO mapUserInfoToDTO(User user, int karma, String avatar) {
 
         if(user == null) {
 
@@ -85,7 +85,7 @@ public class UserMapperImpl implements UserMapper {
 
         userInfoDTO.username(user.getUsername());
         userInfoDTO.email(user.getEmail());
-        userInfoDTO.avatar(user.getAvatar());
+        userInfoDTO.avatar(avatar);
         userInfoDTO.displayName(user.getDisplayName());
         userInfoDTO.description(user.getDescription());
         userInfoDTO.karma(karma);
@@ -111,7 +111,7 @@ public class UserMapperImpl implements UserMapper {
 
         user.username(userInfoDTO.getUsername());
         user.email(userInfoDTO.getEmail());
-        user.avatar(userInfoDTO.getAvatar());
+        //user.avatar(userInfoDTO.getAvatar());
         user.description(userInfoDTO.getDescription());
         user.displayName(userInfoDTO.getDisplayName());
 

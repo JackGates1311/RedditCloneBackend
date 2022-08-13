@@ -3,13 +3,15 @@ package com.example.sr2_2020.svt2021.projekat.mapper;
 import com.example.sr2_2020.svt2021.projekat.dto.PostRequest;
 import com.example.sr2_2020.svt2021.projekat.dto.PostResponse;
 import com.example.sr2_2020.svt2021.projekat.model.Community;
+import com.example.sr2_2020.svt2021.projekat.model.File;
 import com.example.sr2_2020.svt2021.projekat.model.Post;
 import com.example.sr2_2020.svt2021.projekat.model.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.stereotype.Component;
 
-@Component
+import java.util.List;
+
 @Mapper(componentModel = "spring")
 public abstract class PostMapper {
 
@@ -21,10 +23,10 @@ public abstract class PostMapper {
     @Mapping(target = "postId", source = "postId")
     @Mapping(target = "title", source = "title")
     @Mapping(target = "community", source = "community")
-    @Mapping(target = "imagePath", source = "imagePath")
     @Mapping(target = "user", source = "user")
     @Mapping(target = "reactionCount", source = "reactionCount")
+    @Mapping(target = "images", source = "images")
 
-    public abstract PostResponse mapToDTO(Post post, Integer commentCount);
+    public abstract PostResponse mapToDTO(Post post, Integer commentCount, List<String> fileNames);
 
 }

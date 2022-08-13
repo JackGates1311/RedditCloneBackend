@@ -2,15 +2,16 @@ package com.example.sr2_2020.svt2021.projekat.controller;
 
 import com.example.sr2_2020.svt2021.projekat.dto.FileResponse;
 import com.example.sr2_2020.svt2021.projekat.service.FileService;
+import org.hibernate.engine.jdbc.StreamUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/file")
@@ -25,14 +26,11 @@ public class FileController {
         this.fileService = fileService;
     }
 
-    @RequestMapping (value="/upload", method = RequestMethod.POST)
-    public ResponseEntity<FileResponse> fileUpload(@RequestParam("files") MultipartFile[] multipartFiles)
-            throws IOException {
+    @RequestMapping(value="/upload", method = RequestMethod.POST)
+    public ResponseEntity<FileResponse> fileUpload(@RequestParam("files") MultipartFile[] multipartFiles,
+        @RequestParam("postId") Optional<Long> postIdForSave, HttpServletRequest request) throws IOException {
 
-        //TODO perform edit to database ...
-
-        return new ResponseEntity<>(new FileResponse(fileService.uploadFile(savePath, multipartFiles).toString()),
-                    HttpStatus.OK);
+        return fileService.uploadFile(savePath, multipartFiles, postIdForSave, request);
     }
 
     @RequestMapping(value = "/{filename}", produces = MediaType.IMAGE_JPEG_VALUE)

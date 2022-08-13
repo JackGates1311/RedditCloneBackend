@@ -25,6 +25,8 @@ public class PostController {
     @RequestMapping(value = "/createPost", method = RequestMethod.POST)
     public ResponseEntity<String> createPost(@RequestBody PostRequest postRequest, HttpServletRequest request) {
 
+        //TODO Implement file upload within post creation
+
         logger.info("LOGGER: " + LocalDateTime.now() + " - Create post method has been called");
 
         postService.save(postRequest, request);

@@ -11,4 +11,5 @@ import lombok.NoArgsConstructor;
 public class FileResponse {
 
     String fileNames;
+    String message;
 }

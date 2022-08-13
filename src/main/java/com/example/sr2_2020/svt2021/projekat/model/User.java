@@ -2,6 +2,11 @@ package com.example.sr2_2020.svt2021.projekat.model;
 
 import lombok.*;
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.LazyToOne;
+import org.hibernate.annotations.LazyToOneOption;
+
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -22,6 +27,13 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
+    @ManyToOne(cascade = CascadeType.MERGE ,targetEntity = File.class, fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
+    @JoinColumn(name = "fileId", referencedColumnName = "fileId")
+    @LazyToOne(LazyToOneOption.PROXY)
+    @ToString.Exclude
+    private File file;
+
     @NotBlank(message = "Username is required")
     @Column(unique=true)
     private String username;
@@ -32,8 +44,6 @@ public class User {
     @Email
     @NotEmpty(message = "Email is required")
     private String email;
-
-    private String avatar;
 
     private LocalDateTime registrationDate;
 

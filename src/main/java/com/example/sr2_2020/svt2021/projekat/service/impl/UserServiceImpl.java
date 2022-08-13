@@ -8,6 +8,7 @@ import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneExceptio
 import com.example.sr2_2020.svt2021.projekat.mapper.UserMapper;
 import com.example.sr2_2020.svt2021.projekat.model.User;
 import com.example.sr2_2020.svt2021.projekat.repository.CommentRepository;
+import com.example.sr2_2020.svt2021.projekat.repository.FileRepository;
 import com.example.sr2_2020.svt2021.projekat.repository.PostRepository;
 import com.example.sr2_2020.svt2021.projekat.repository.UserRepository;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
@@ -28,6 +29,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -49,6 +51,8 @@ public class UserServiceImpl implements UserService {
 
     private final CommentRepository commentRepository;
 
+    private final FileRepository fileRepository;
+
     static final Logger logger = LogManager.getLogger(CommunityController.class);
 
     @Override
@@ -59,7 +63,7 @@ public class UserServiceImpl implements UserService {
         user.setUsername(registerRequest.getUsername());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setEmail(registerRequest.getEmail());
-        user.setAvatar(registerRequest.getAvatar());
+        //user.setAvatar(registerRequest.getAvatar());
         user.setRegistrationDate(LocalDateTime.now());
         user.setDescription(registerRequest.getDescription());
         user.setDisplayName(registerRequest.getDisplayName());
@@ -81,7 +85,7 @@ public class UserServiceImpl implements UserService {
         User user = userFound.orElseThrow(
                 () -> new UsernameNotFoundException("User with entered username (" + username + ")  doesn't exists"));
 
-        /// REFACTOR IT///
+        ///TODO REFACTOR IT///
 
         Authentication authenticateUser = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 username, changePasswordRequest.getOldPassword()));
@@ -92,7 +96,7 @@ public class UserServiceImpl implements UserService {
 
         String jwtToken = tokenUtils.generateToken(userDetails);
 
-        /// DUPLICATE CODE /////
+        ///TODO DUPLICATE CODE /////
 
         if(!changePasswordRequest.getOldPassword().equals(changePasswordRequest.getNewPassword()) &&
                 jwtToken != null) {
@@ -129,9 +133,14 @@ public class UserServiceImpl implements UserService {
 
         int karma = postCount + commentCount;
 
+        String avatar = null;
+
+        if(!Objects.isNull(fileRepository.findByUser(user)))
+            avatar = fileRepository.findByUser(user).getFilename();
+
         logger.info("LOGGER: " + LocalDateTime.now() + " - Saving to database ...");
 
-        return userMapper.mapUserInfoToDTO(user, karma);
+        return userMapper.mapUserInfoToDTO(user, karma, avatar);
     }
 
     @Override
@@ -146,7 +155,7 @@ public class UserServiceImpl implements UserService {
 
         User userEditData = userMapper.mapDTOToUser(userInfoDTO);
 
-        user.setAvatar(userEditData.getAvatar());
+        //user.setAvatar(userEditData.getAvatar());
         user.setDisplayName(userEditData.getDisplayName());
         user.setDescription(userEditData.getDescription());
 

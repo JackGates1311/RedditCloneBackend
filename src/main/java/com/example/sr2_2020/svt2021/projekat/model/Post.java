@@ -11,8 +11,6 @@ import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-//TODO try to use Lazy loading where is possible...
-
 @Getter
 @Setter
 @ToString
@@ -27,8 +25,6 @@ public class Post {
     private Long postId;
 
     private LocalDateTime creationDate;
-
-    private String imagePath;
 
     @Lob
     @Column(length = 65535)
@@ -54,6 +50,7 @@ public class Post {
 
     private Integer reactionCount;
 
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     @Override
     public boolean equals(Object o) {
 

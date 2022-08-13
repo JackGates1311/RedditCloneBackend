@@ -5,6 +5,7 @@ import com.example.sr2_2020.svt2021.projekat.dto.PostRequest;
 import com.example.sr2_2020.svt2021.projekat.dto.PostResponse;
 import com.example.sr2_2020.svt2021.projekat.mapper.PostMapper;
 import com.example.sr2_2020.svt2021.projekat.model.Community;
+import com.example.sr2_2020.svt2021.projekat.model.File;
 import com.example.sr2_2020.svt2021.projekat.model.Post;
 import com.example.sr2_2020.svt2021.projekat.model.Post.PostBuilder;
 import com.example.sr2_2020.svt2021.projekat.model.User;
@@ -12,6 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 public class PostMapperImpl extends PostMapper {
@@ -33,9 +35,7 @@ public class PostMapperImpl extends PostMapper {
         PostBuilder post = Post.builder();
 
         post.postId(postRequest.getPostId());
-        //post.communityId(postRequest.getCommunityId());
         post.creationDate(LocalDateTime.now());
-        post.imagePath("");
         post.text(postRequest.getText());
         post.title(postRequest.getTitle());
         post.reactionCount(postRequest.getReactionCount());
@@ -68,7 +68,7 @@ public class PostMapperImpl extends PostMapper {
     }
 
     @Override
-    public PostResponse mapToDTO(Post post, Integer commentCount) {
+    public PostResponse mapToDTO(Post post, Integer commentCount, List<String> fileNames) {
 
         if(post == null) {
 
@@ -83,15 +83,14 @@ public class PostMapperImpl extends PostMapper {
 
         postResponse.setPostId(post.getPostId());
         postResponse.setCreationDate(post.getCreationDate().toString());
-        postResponse.setImagePath(post.getImagePath());
+        postResponse.setFileId(null);
         postResponse.setText(post.getText());
         postResponse.setTitle(post.getTitle());
         postResponse.setReactionCount(post.getReactionCount());
-
         postResponse.setCommunityName(postCommunityName(post));
         postResponse.setUsername(postUserName(post));
-
         postResponse.setCommentCount(commentCount);
+        postResponse.setImages(fileNames);
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - New post has been successfully mapped to DTO");
 
