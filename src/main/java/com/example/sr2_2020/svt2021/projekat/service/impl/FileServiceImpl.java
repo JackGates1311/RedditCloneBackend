@@ -36,14 +36,10 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public ResponseEntity<FileResponse> uploadFile(String savePath, MultipartFile[] multipartFiles,
-        Optional<Long> postIdForSave, HttpServletRequest request) throws IOException {
+        Long postId, HttpServletRequest request) throws IOException {
 
         User user = null;
         Post post = null;
-        Long postId = null;
-
-        if(postIdForSave.isPresent())
-            postId = postIdForSave.get();
 
         if(postId == null) {
 
@@ -62,8 +58,7 @@ public class FileServiceImpl implements FileService {
 
         } else {
 
-            post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postIdForSave.get()
-                    .toString()));
+            post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId.toString()));
         }
 
 

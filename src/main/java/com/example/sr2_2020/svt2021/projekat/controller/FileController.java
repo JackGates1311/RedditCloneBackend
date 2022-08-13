@@ -11,7 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/file")
@@ -28,9 +27,9 @@ public class FileController {
 
     @RequestMapping(value="/upload", method = RequestMethod.POST)
     public ResponseEntity<FileResponse> fileUpload(@RequestParam("files") MultipartFile[] multipartFiles,
-        @RequestParam("postId") Optional<Long> postIdForSave, HttpServletRequest request) throws IOException {
+        @RequestParam(required = false) Long postId, HttpServletRequest request) throws IOException {
 
-        return fileService.uploadFile(savePath, multipartFiles, postIdForSave, request);
+        return fileService.uploadFile(savePath, multipartFiles, postId, request);
     }
 
     @RequestMapping(value = "/{filename}", produces = MediaType.IMAGE_JPEG_VALUE)
