@@ -15,4 +15,9 @@ public interface FileService {
                                             HttpServletRequest request) throws IOException;
 
     InputStream getFile(String path, String filename) throws FileNotFoundException;
+
+    ResponseEntity<FileResponse> replaceFile(String savePath, MultipartFile[] multipartFiles,
+                                             HttpServletRequest request) throws IOException;
+
+    ResponseEntity<FileResponse> deleteFile(String savePath, String filename) throws IOException;
 }

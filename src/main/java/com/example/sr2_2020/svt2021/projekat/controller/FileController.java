@@ -32,6 +32,13 @@ public class FileController {
         return fileService.uploadFile(savePath, multipartFiles, postId, request);
     }
 
+    @RequestMapping(value="/upload", method = RequestMethod.PUT)
+    public ResponseEntity<FileResponse> replaceFile(@RequestParam("files") MultipartFile[] multipartFiles,
+                                                   HttpServletRequest request) throws IOException {
+
+        return fileService.replaceFile(savePath, multipartFiles, request);
+    }
+
     @RequestMapping(value = "/{filename}", produces = MediaType.IMAGE_JPEG_VALUE)
     public void getFile(@PathVariable("filename") String filename, HttpServletResponse response) throws
             IOException {
@@ -39,5 +46,12 @@ public class FileController {
         response.setContentType(MediaType.IMAGE_JPEG_VALUE);
 
         StreamUtils.copy(this.fileService.getFile(savePath, filename), response.getOutputStream());
+    }
+
+
+    @RequestMapping(value = "/delete/{filename}", method = RequestMethod.DELETE)
+    public ResponseEntity<FileResponse> deleteFile(@PathVariable("filename") String filename) throws IOException {
+
+        return fileService.deleteFile(savePath, filename);
     }
 }

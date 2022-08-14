@@ -54,6 +54,8 @@ public class CommentServiceImpl implements CommentService {
 
     static final Logger logger = LogManager.getLogger(CommunityController.class);
 
+    //TODO check comment delete function if works correctly
+
     @Override
     public void save(CommentDTORequest commentDTORequest, HttpServletRequest request) {
 
