@@ -1,10 +1,7 @@
 package com.example.sr2_2020.svt2021.projekat.service.impl;
 
 import com.example.sr2_2020.svt2021.projekat.controller.CommunityController;
-import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTO;
-import com.example.sr2_2020.svt2021.projekat.dto.PostRequest;
-import com.example.sr2_2020.svt2021.projekat.dto.PostResponse;
-import com.example.sr2_2020.svt2021.projekat.dto.ReactionDTO;
+import com.example.sr2_2020.svt2021.projekat.dto.*;
 import com.example.sr2_2020.svt2021.projekat.exception.CommunityNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.PostNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneException;
@@ -26,9 +23,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 @AllArgsConstructor
@@ -57,6 +55,8 @@ public class PostServiceImpl implements PostService {
 
     private final FileRepository fileRepository;
 
+    private final FlairRepository flairRepository;
+
     static final Logger logger = LogManager.getLogger(CommunityController.class);
     @Override
     public void save(PostRequest postRequest, HttpServletRequest request) {
@@ -74,7 +74,34 @@ public class PostServiceImpl implements PostService {
 
         postRequest.setReactionCount(1);
 
-        Post post = postRepository.save(postMapper.map(postRequest, community, user));
+        //
+
+        List<Flair> flairs = new ArrayList<>();
+
+        Post post;
+
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting data for saving post CJECK ...");
+
+        if(Objects.isNull(postRequest.getFlairs())) {
+
+            post = postRepository.save(postMapper.map(postRequest, community, user, flairs));
+
+            Flair data = flairRepository.findByNameAndCommunityId("Sexy",
+                    community.getCommunityId()).orElseThrow();
+
+        } else {
+
+            flairs = postRequest.getFlairs().stream().map(flairName -> flairRepository.findByNameAndCommunityId(
+                    flairName, community.getCommunityId()).orElseThrow(() -> new SpringRedditCloneException(
+                    "Flair not found in specified community with flair name: " + flairName))).collect(toList());
+
+            post = postRepository.save(postMapper.map(postRequest, community, user, flairs));
+
+            flairs.forEach(flair -> flair.getPosts().add(post));
+
+        }
+
+        //
 
         ReactionDTO reactionDTO = new ReactionDTO();
 
@@ -82,6 +109,15 @@ public class PostServiceImpl implements PostService {
         reactionDTO.setPostId(post.getPostId());
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - saving post to database");
+
+        // here implement flair saving
+
+        //find flair by id
+
+        //post.getFlair().add(flairRepository.findById(1L).orElseThrow());
+
+        //post.getFlair().add(flairRepository.findById(7L).orElseThrow());
+        //
 
         reactionRepository.save(reactionMapper.mapDTOToReaction(reactionDTO, post, user, null));
     }
@@ -110,6 +146,11 @@ public class PostServiceImpl implements PostService {
     @Override
     public ResponseEntity<PostRequest> editPost(PostRequest postRequest, Long id, HttpServletRequest request) {
 
+        //TODO test flairs CRUD (flair add, delete, get, edit, also flair CRUD for posts and communities)
+        //TODO refactor code ,,, (try to use lazy loading)
+
+        postRequest.setFlairs(postRequest.getFlairs().stream().distinct().collect(toList()));
+
         logger.info("LOGGER: " + LocalDateTime.now() + " - Getting post for edit ...");
 
         Community community = communityRepository.findByNameAndIsSuspended(postRequest.getCommunityName(),
@@ -119,11 +160,36 @@ public class PostServiceImpl implements PostService {
         String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
 
         User user = userRepository.findByUsername(username).orElseThrow(() -> new
-                UsernameNotFoundException("User with username " + username + " not found"));
+                SpringRedditCloneException("User with username " + username + " not found"));
 
         Post getPostForEdit = postRepository.findById(id).orElseThrow(() -> new PostNotFoundException(id.toString()));
 
-        Post post = postMapper.map(postRequest, community, user);
+        //
+
+            Post post;
+
+            List<Flair> flairs = new ArrayList<>();
+
+            if(Objects.isNull(postRequest.getFlairs())) {
+
+                post = postMapper.map(postRequest, community, user, flairs);
+
+            } else {
+
+                //Here add validation
+
+                flairs = postRequest.getFlairs().stream().map(flairName ->
+                        flairRepository.findByNameAndCommunityId(flairName, community.getCommunityId()).
+                                orElseThrow(() -> new SpringRedditCloneException("Flair not found with name: " +
+                                        flairName))).collect(toList());
+
+                post = postMapper.map(postRequest, community, user, flairs);
+
+                flairs.forEach(flair -> flair.getPosts().add(post));
+
+            }
+
+        //
 
         if(Objects.equals(getPost(id).getUsername(), username)) {
 
@@ -178,9 +244,8 @@ public class PostServiceImpl implements PostService {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Getting post by name");
 
-        CommunityDTO communityDTO = communityService.getCommunityByName(communityName);
-
-        Community community = communityMapper.mapDTOToCommunity(communityDTO);
+        Community community = communityRepository.findByNameAndIsSuspended(communityName, false)
+                .orElseThrow(() -> new CommunityNotFoundException("Community not found with specified id"));
 
         return postRepository.findPostsByCommunity(community).stream().map((Post post) ->
                         postMapper.mapToDTO(post, commentRepository.countByPostAndIsDeleted(post,

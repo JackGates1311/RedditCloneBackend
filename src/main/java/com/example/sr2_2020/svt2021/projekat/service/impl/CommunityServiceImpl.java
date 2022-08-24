@@ -1,14 +1,16 @@
 package com.example.sr2_2020.svt2021.projekat.service.impl;
 
 import com.example.sr2_2020.svt2021.projekat.controller.CommunityController;
-import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTO;
+import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTORequest;
+import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTOResponse;
+import com.example.sr2_2020.svt2021.projekat.exception.CommunityNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneException;
 import com.example.sr2_2020.svt2021.projekat.mapper.CommunityMapper;
 import com.example.sr2_2020.svt2021.projekat.model.Banned;
 import com.example.sr2_2020.svt2021.projekat.model.Community;
-import com.example.sr2_2020.svt2021.projekat.repository.BannedRepository;
-import com.example.sr2_2020.svt2021.projekat.repository.CommunityRepository;
-import com.example.sr2_2020.svt2021.projekat.repository.UserRepository;
+import com.example.sr2_2020.svt2021.projekat.model.Flair;
+import com.example.sr2_2020.svt2021.projekat.model.Post;
+import com.example.sr2_2020.svt2021.projekat.repository.*;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.CommunityService;
 import lombok.AllArgsConstructor;
@@ -18,9 +20,13 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
@@ -39,34 +45,51 @@ public class CommunityServiceImpl implements CommunityService {
 
     private final BannedRepository bannedRepository;
 
+    private final FlairRepository flairRepository;
+
+    private final PostRepository postRepository;
+
     static final Logger logger = LogManager.getLogger(CommunityController.class);
 
     @Override
-    public CommunityDTO createCommunity(CommunityDTO communityDTO) {
+    public ResponseEntity<String> createCommunity(CommunityDTORequest communityDTORequest) {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Getting data for saving community ...");
 
-        communityDTO.setIsSuspended(false);
+        communityDTORequest.setIsSuspended(false);
 
-        Community newCommunity = communityRepository.save(communityMapper.mapDTOToCommunity(communityDTO));
+        // TODO while creating new community, community moderator can add (before sending create comunity request)
+        //  flairs (with add flair request, after we can select newly added flair) from or use already added flairs...
 
-        //TODO Fix code below (low priority for now)
+        List<Flair> flairs = new ArrayList<>();
 
-        newCommunity.setCommunityId(newCommunity.getCommunityId());
-        newCommunity.setCreationDate(newCommunity.getCreationDate());
-        newCommunity.setIsSuspended(false);
-        newCommunity.setSuspendedReason("");
+        Community newCommunity;
 
-        // Maybe you want here to send these four parameters from front-end?!
+        if(Objects.isNull(communityDTORequest.getFlairs())) {
+
+            communityRepository.save(communityMapper.mapDTOToCommunity(communityDTORequest, flairs));
+
+        } else {
+
+            flairs = communityDTORequest.getFlairs().stream().map(
+                    flairName -> flairRepository.findByName(flairName).orElseThrow(() ->
+                    new SpringRedditCloneException("Flair not found with name: " + flairName))).collect(toList());
+
+            newCommunity = communityRepository.save(communityMapper.mapDTOToCommunity(communityDTORequest, flairs));
+
+            flairs.forEach(flair -> flair.getCommunities().add(newCommunity));
+        }
+
+        //
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - saving community to database");
 
-        return communityDTO;
+        return ResponseEntity.status(HttpStatus.CREATED).body("Community is successfully created");
 
     }
 
     @Override
-    public List<CommunityDTO> getAllCommunities() {
+    public List<CommunityDTOResponse> getAllCommunities() {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Getting all communities in database");
 
@@ -75,7 +98,7 @@ public class CommunityServiceImpl implements CommunityService {
     }
 
     @Override
-    public CommunityDTO getCommunity(Long id) {
+    public CommunityDTOResponse getCommunity(Long id) {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Getting community by ID in database");
 
@@ -87,25 +110,72 @@ public class CommunityServiceImpl implements CommunityService {
     }
 
     @Override
-    public ResponseEntity<CommunityDTO> editCommunity(CommunityDTO communityDTO, Long communityId) {
+    public ResponseEntity<CommunityDTORequest> editCommunity(CommunityDTORequest communityDTORequest, Long communityId) {
+
+        communityDTORequest.setFlairs(communityDTORequest.getFlairs().stream().distinct().collect(toList()));
+
+        //TODO Implement rebasing community flairs (this will be done on front side)
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Getting community data for edit ...");
 
-        Community community = communityMapper.mapDTOToCommunity(communityDTO);
+        List<Flair> flairs = new ArrayList<>();
 
-        community.setIsSuspended(false);
-        community.setCommunityId(communityId);
+        if(Objects.isNull(communityDTORequest.getFlairs())) {
 
-        communityRepository.save(community);
+            communityRepository.save(communityMapper.mapDTOToCommunity(communityDTORequest, flairs));
+
+        } else {
+
+            flairs = communityDTORequest.getFlairs().stream().map(flairName -> flairRepository.findByName(flairName).
+                        orElseThrow(() -> new SpringRedditCloneException("Flair not found with name: " + flairName))).
+                        collect(toList());
+
+            Community community = communityMapper.mapDTOToCommunity(communityDTORequest, flairs);
+
+            List<String> oldFlairs = communityRepository.findById(communityId).orElseThrow(() -> new
+                    CommunityNotFoundException("Community not with id: " + communityId)).getFlair().stream().
+                    map(Flair::getName).collect(toList());
+
+            List<String> newFlairs = communityDTORequest.getFlairs();
+
+
+            List<String> deletedFlairs = oldFlairs.stream().filter(
+                    v -> !newFlairs.contains(v)).collect(Collectors.toList());
+
+            List<String> flairsUsedInPosts = flairRepository.findFlairsUsedInPostsByCommunityId(communityId);
+
+            System.out.println("OLD FLAIRS: " + oldFlairs);
+            System.out.println("NEW FLAIRS: " + newFlairs);
+            System.out.println("DELETED FLAIRS: " + deletedFlairs);
+            System.out.println("USED FLAIRS IN POSTS: " + Arrays.toString(flairsUsedInPosts.toArray()));
+
+            for(String flairToDelete: deletedFlairs) {
+                for(String usedFlair : flairsUsedInPosts){
+                    if(flairToDelete.equals(usedFlair)) {
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+                    }
+                }
+            }
+
+            community.setIsSuspended(false);
+            community.setCommunityId(communityId);
+
+            // todo does it line is really needed here?!
+            postRepository.findPostsByCommunity(community).forEach(post -> post.setCommunity(community));
+
+            communityRepository.save(community);
+
+            flairs.forEach(flair -> flair.getCommunities().add(community));
+        }
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Saving community data to database...");
 
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(communityDTO);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(communityDTORequest);
     }
 
     @Override
-    public ResponseEntity<CommunityDTO> suspendCommunityById(CommunityDTO communityDTO, Long id,
-                                                             HttpServletRequest request) {
+    public ResponseEntity<CommunityDTORequest> suspendCommunityById(CommunityDTORequest communityDTORequest, Long id,
+                                                                     HttpServletRequest request) {
 
         //TODO transfer SpringRedditClone exception to CommunityNotFoundException
 
@@ -115,7 +185,8 @@ public class CommunityServiceImpl implements CommunityService {
                 "Community not found with entered ID"));
 
         community.setIsSuspended(true);
-        community.setSuspendedReason(communityDTO.getSuspendedReason());
+        community.setSuspendedReason(communityDTORequest.getSuspendedReason());
+        community.setFlair(null);
 
         communityRepository.save(community);
 
@@ -136,7 +207,7 @@ public class CommunityServiceImpl implements CommunityService {
     }
 
     @Override
-    public CommunityDTO getCommunityByName(String name) {
+    public CommunityDTOResponse getCommunityByName(String name) {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Getting community data by name...");
 

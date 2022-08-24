@@ -55,6 +55,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
 
+        //TODO EMERGENCY - Fix authorization on Spring Security, it doesn't returns 403 where it needs to be returned!
+
+        //Photos not working well ...
+
         httpSecurity.headers().cacheControl().disable();
 
         httpSecurity.cors();
@@ -65,8 +69,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 antMatchers("/api/auth/**", "/api/posts/getAllPosts", "/api/communities/name={name}",
                         "/api/posts/communityName={communityName}", "/api/communities/getAllCommunities",
                         "/api/posts/{id}", "/api/comments/getPostComments/{id}", "/api/comments/{id}",
-                        "/api/file/{filename}").
-                permitAll().anyRequest().authenticated();
+                        "/api/file/{filename}").permitAll().anyRequest().authenticated();
 
         httpSecurity.addFilterBefore(authTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
     }

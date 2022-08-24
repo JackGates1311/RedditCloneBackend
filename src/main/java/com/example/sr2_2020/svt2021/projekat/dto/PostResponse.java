@@ -13,12 +13,12 @@ public class PostResponse {
     private Long postId;
     private String communityName;
     private String creationDate;
-    private Long fileId;
     private String text;
     private String title;
     private String username;
     private Integer reactionCount;
     private Integer commentCount;
     private List<String> images;
+    private List<String> flairs;
 
 }

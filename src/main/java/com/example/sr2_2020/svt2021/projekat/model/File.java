@@ -5,7 +5,6 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.LazyToOne;
 import org.hibernate.annotations.LazyToOneOption;
-
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 

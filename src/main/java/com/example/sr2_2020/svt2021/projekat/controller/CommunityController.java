@@ -1,6 +1,7 @@
 package com.example.sr2_2020.svt2021.projekat.controller;
 
-import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTO;
+import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTORequest;
+import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTOResponse;
 import com.example.sr2_2020.svt2021.projekat.service.CommunityService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,17 +26,15 @@ public class CommunityController {
     static final Logger logger = LogManager.getLogger(CommunityController.class);
 
     @RequestMapping(value= "/createCommunity", method = RequestMethod.POST)
-    public ResponseEntity<String> createCommunity(@RequestBody CommunityDTO communityDTO) {
+    public ResponseEntity<String> createCommunity(@RequestBody CommunityDTORequest communityDTORequest) {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Create community method has been called");
 
-        communityService.createCommunity(communityDTO);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body("Community is successfully created");
+        return communityService.createCommunity(communityDTORequest);
     }
 
     @RequestMapping("/getAllCommunities")
-    public ResponseEntity<List<CommunityDTO>> getAllCommunities() {
+    public ResponseEntity<List<CommunityDTOResponse>> getAllCommunities() {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Get all communities method has been called");
 
@@ -43,7 +42,7 @@ public class CommunityController {
     }
 
     @RequestMapping("/id={id}")
-    public ResponseEntity<CommunityDTO> getCommunity(@PathVariable Long id) {
+    public ResponseEntity<CommunityDTOResponse> getCommunity(@PathVariable Long id) {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Get community method has been called");
 
@@ -51,7 +50,7 @@ public class CommunityController {
     }
 
     @RequestMapping("/name={name}")
-    public ResponseEntity<CommunityDTO> getCommunityByName(@PathVariable String name) {
+    public ResponseEntity<CommunityDTOResponse> getCommunityByName(@PathVariable String name) {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Get community by name method has been called");
 
@@ -59,21 +58,21 @@ public class CommunityController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-    public ResponseEntity<CommunityDTO> editCommunity(@RequestBody CommunityDTO communityDTO, @PathVariable Long id) {
+    public ResponseEntity<CommunityDTORequest> editCommunity(@RequestBody CommunityDTORequest communityDTORequest, @PathVariable Long id) {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Edit community method has been called");
 
-        return communityService.editCommunity(communityDTO, id);
+        return communityService.editCommunity(communityDTORequest, id);
     }
 
     @PreAuthorize("hasAuthority('ADMINISTRATOR')")
     @RequestMapping(value = "/suspend/{id}", method = RequestMethod.PUT)
-    public ResponseEntity<CommunityDTO> deleteCommunity(@RequestBody CommunityDTO communityDTO,
-                                                        @PathVariable Long id, HttpServletRequest request) {
+    public ResponseEntity<CommunityDTORequest> deleteCommunity(@RequestBody CommunityDTORequest communityDTORequest,
+                                                                @PathVariable Long id, HttpServletRequest request) {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Delete community method has been called");
 
-        return communityService.suspendCommunityById(communityDTO, id, request);
+        return communityService.suspendCommunityById(communityDTORequest, id, request);
 
     }
 }

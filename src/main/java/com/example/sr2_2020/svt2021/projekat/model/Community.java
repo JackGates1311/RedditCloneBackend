@@ -2,11 +2,17 @@ package com.example.sr2_2020.svt2021.projekat.model;
 
 import lombok.*;
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.LazyToOne;
+import org.hibernate.annotations.LazyToOneOption;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+
 import static javax.persistence.FetchType.LAZY;
 
 @Getter
@@ -40,6 +46,13 @@ public class Community {
     private List<Post> posts;
 
     private String suspendedReason;
+
+    //https://www.youtube.com/watch?v=-q9rp2pzvGU
+
+    @ManyToMany(fetch = FetchType.EAGER) // TODO try to use lazy loading
+    @JoinTable(name="community_flair", joinColumns = { @JoinColumn(name = "community_id")},
+            inverseJoinColumns = { @JoinColumn (name = "flair_id")})
+    private Set<Flair> flair = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {

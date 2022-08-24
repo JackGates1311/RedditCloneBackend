@@ -1,22 +1,31 @@
 package com.example.sr2_2020.svt2021.projekat.mapper.impl;
 
 import com.example.sr2_2020.svt2021.projekat.controller.CommunityController;
-import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTO;
+import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTORequest;
+import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTOResponse;
 import com.example.sr2_2020.svt2021.projekat.mapper.CommunityMapper;
 import com.example.sr2_2020.svt2021.projekat.model.Community;
+import com.example.sr2_2020.svt2021.projekat.model.Flair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTO.CommunityDTOBuilder;
+import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTOResponse.CommunityDTOResponseBuilder;
 import com.example.sr2_2020.svt2021.projekat.model.Community.CommunityBuilder;
 import org.springframework.stereotype.Component;
+
+import java.lang.reflect.Array;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class CommunityMapperImpl implements CommunityMapper {
 
     static final Logger logger = LogManager.getLogger(CommunityController.class);
     @Override
-    public CommunityDTO mapCommunityToDTO(Community community) {
+    public CommunityDTOResponse mapCommunityToDTO(Community community) {
 
         if (community == null) {
 
@@ -27,7 +36,7 @@ public class CommunityMapperImpl implements CommunityMapper {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Building new community response ...");
 
-        CommunityDTOBuilder communityDTO = CommunityDTO.builder();
+        CommunityDTOResponseBuilder communityDTO = CommunityDTOResponse.builder();
 
         communityDTO.communityId(community.getCommunityId());
         communityDTO.name(community.getName());
@@ -35,6 +44,8 @@ public class CommunityMapperImpl implements CommunityMapper {
         communityDTO.creationDate(LocalDateTime.now().toString());
         communityDTO.isSuspended(community.getIsSuspended());
         communityDTO.suspendedReason(community.getSuspendedReason());
+        communityDTO.flairs(community.getFlair().stream().
+                map(Flair::getName).collect(Collectors.toList()));
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - New community has been successfully mapped to DTO");
 
@@ -42,9 +53,9 @@ public class CommunityMapperImpl implements CommunityMapper {
     }
 
     @Override
-    public Community mapDTOToCommunity(CommunityDTO communityDTO) {
+    public Community mapDTOToCommunity(CommunityDTORequest communityDTORequest, List<Flair> flairs) {
 
-        if(communityDTO == null) {
+        if(communityDTORequest == null) {
 
             logger.error("LOGGER: " + LocalDateTime.now() + " - CommunityDTORequest body is null");
 
@@ -55,12 +66,21 @@ public class CommunityMapperImpl implements CommunityMapper {
 
         CommunityBuilder community = Community.builder();
 
-        community.communityId(communityDTO.getCommunityId());
-        community.name(communityDTO.getName());
-        community.description(communityDTO.getDescription());
+        community.communityId(communityDTORequest.getCommunityId());
+        community.name(communityDTORequest.getName());
+        community.description(communityDTORequest.getDescription());
         community.creationDate(LocalDateTime.now());
-        community.isSuspended(communityDTO.getIsSuspended());
-        community.suspendedReason(communityDTO.getSuspendedReason());
+        community.isSuspended(communityDTORequest.getIsSuspended());
+        community.suspendedReason(communityDTORequest.getSuspendedReason());
+
+        Set<Flair> communityFlairs;
+
+        if(!flairs.isEmpty())
+            communityFlairs = new HashSet<>(flairs);
+        else
+            communityFlairs = null;
+
+        community.flair(communityFlairs);
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - New community has been successfully mapped to object");
 

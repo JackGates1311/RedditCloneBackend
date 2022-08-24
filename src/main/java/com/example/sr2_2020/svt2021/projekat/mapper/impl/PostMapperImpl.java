@@ -5,7 +5,7 @@ import com.example.sr2_2020.svt2021.projekat.dto.PostRequest;
 import com.example.sr2_2020.svt2021.projekat.dto.PostResponse;
 import com.example.sr2_2020.svt2021.projekat.mapper.PostMapper;
 import com.example.sr2_2020.svt2021.projekat.model.Community;
-import com.example.sr2_2020.svt2021.projekat.model.File;
+import com.example.sr2_2020.svt2021.projekat.model.Flair;
 import com.example.sr2_2020.svt2021.projekat.model.Post;
 import com.example.sr2_2020.svt2021.projekat.model.Post.PostBuilder;
 import com.example.sr2_2020.svt2021.projekat.model.User;
@@ -13,7 +13,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class PostMapperImpl extends PostMapper {
@@ -21,7 +24,7 @@ public class PostMapperImpl extends PostMapper {
     static final Logger logger = LogManager.getLogger(CommunityController.class);
 
     @Override
-    public Post map(PostRequest postRequest, Community community, User user) {
+    public Post map(PostRequest postRequest, Community community, User user, List<Flair> flairs) {
 
         if(postRequest == null) {
 
@@ -39,6 +42,15 @@ public class PostMapperImpl extends PostMapper {
         post.text(postRequest.getText());
         post.title(postRequest.getTitle());
         post.reactionCount(postRequest.getReactionCount());
+
+        Set<Flair> postFlairs;
+
+        if(!flairs.isEmpty())
+            postFlairs = new HashSet<>(flairs);
+        else
+            postFlairs = null;
+
+        post.flair(postFlairs);
 
         if(community != null) {
 
@@ -83,7 +95,6 @@ public class PostMapperImpl extends PostMapper {
 
         postResponse.setPostId(post.getPostId());
         postResponse.setCreationDate(post.getCreationDate().toString());
-        postResponse.setFileId(null);
         postResponse.setText(post.getText());
         postResponse.setTitle(post.getTitle());
         postResponse.setReactionCount(post.getReactionCount());
@@ -91,6 +102,7 @@ public class PostMapperImpl extends PostMapper {
         postResponse.setUsername(postUserName(post));
         postResponse.setCommentCount(commentCount);
         postResponse.setImages(fileNames);
+        postResponse.setFlairs(post.getFlair().stream().map(Flair::getName).collect(Collectors.toList()));
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - New post has been successfully mapped to DTO");
 

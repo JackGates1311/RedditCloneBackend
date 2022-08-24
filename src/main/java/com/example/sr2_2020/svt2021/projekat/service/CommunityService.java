@@ -1,6 +1,7 @@
 package com.example.sr2_2020.svt2021.projekat.service;
 
-import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTO;
+import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTORequest;
+import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTOResponse;
 import org.springframework.http.ResponseEntity;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
@@ -9,20 +10,20 @@ import java.util.List;
 public interface CommunityService {
 
     @Transactional
-    CommunityDTO createCommunity(CommunityDTO communityDTO);
+    ResponseEntity<String> createCommunity(CommunityDTORequest communityDTORequest);
 
     @Transactional
-    List<CommunityDTO> getAllCommunities();
+    List<CommunityDTOResponse> getAllCommunities();
 
     @Transactional
-    CommunityDTO getCommunity(Long id);
+    CommunityDTOResponse getCommunity(Long id);
 
     @Transactional
-    ResponseEntity<CommunityDTO> editCommunity(CommunityDTO communityDTO, Long communityId);
+    ResponseEntity<CommunityDTORequest> editCommunity(CommunityDTORequest communityDTORequest, Long communityId);
 
     @Transactional
-    ResponseEntity<CommunityDTO> suspendCommunityById(CommunityDTO communityDTO, Long id, HttpServletRequest request);
+    ResponseEntity<CommunityDTORequest> suspendCommunityById(CommunityDTORequest communityDTORequest, Long id, HttpServletRequest request);
 
     @Transactional
-    CommunityDTO getCommunityByName(String name);
+    CommunityDTOResponse getCommunityByName(String name);
 }

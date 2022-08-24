@@ -9,7 +9,9 @@ import org.hibernate.annotations.LazyToOneOption;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -49,6 +51,11 @@ public class Post {
     private Community community;
 
     private Integer reactionCount;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name="post_flair", joinColumns = { @JoinColumn(name = "post_id")},
+            inverseJoinColumns = { @JoinColumn (name = "flair_id")})
+    private Set<Flair> flair = new HashSet<>();
 
     @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     @Override
