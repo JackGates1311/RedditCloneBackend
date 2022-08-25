@@ -155,6 +155,7 @@ public class UserServiceImpl implements UserService {
 
         User userEditData = userMapper.mapDTOToUser(userInfoDTO);
 
+        //TODO does it is really needed?
         //user.setAvatar(userEditData.getAvatar());
         user.setDisplayName(userEditData.getDisplayName());
         user.setDescription(userEditData.getDescription());

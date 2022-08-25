@@ -13,7 +13,7 @@ public interface PostService {
     void save(PostRequest postRequest, HttpServletRequest request);
 
     @Transactional
-    List<PostResponse> getAllPosts();
+    List<PostResponse> getAllPosts(String sortBy);
 
     @Transactional
     PostResponse getPost(Long id);
@@ -25,5 +25,5 @@ public interface PostService {
     ResponseEntity<?> deleteById(Long id, HttpServletRequest request);
 
     @Transactional
-    List<PostResponse> getPostsByCommunityName(String communityName);
+    List<PostResponse> getPostsByCommunityName(String communityName, String sortBy);
 }

@@ -5,21 +5,19 @@ import com.example.sr2_2020.svt2021.projekat.dto.*;
 import com.example.sr2_2020.svt2021.projekat.exception.CommunityNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.PostNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneException;
-import com.example.sr2_2020.svt2021.projekat.mapper.CommunityMapper;
 import com.example.sr2_2020.svt2021.projekat.mapper.PostMapper;
 import com.example.sr2_2020.svt2021.projekat.mapper.ReactionMapper;
 import com.example.sr2_2020.svt2021.projekat.model.*;
 import com.example.sr2_2020.svt2021.projekat.repository.*;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
-import com.example.sr2_2020.svt2021.projekat.service.CommunityService;
 import com.example.sr2_2020.svt2021.projekat.service.PostService;
+import com.example.sr2_2020.svt2021.projekat.service.SortService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
@@ -39,11 +37,7 @@ public class PostServiceImpl implements PostService {
 
     private final TokenUtils tokenUtils;
 
-    private final CommunityMapper communityMapper;
-
     private final PostMapper postMapper;
-
-    private final CommunityService communityService;
 
     private final ReactionRepository reactionRepository;
 
@@ -56,6 +50,8 @@ public class PostServiceImpl implements PostService {
     private final FileRepository fileRepository;
 
     private final FlairRepository flairRepository;
+
+    private final SortService sortService;
 
     static final Logger logger = LogManager.getLogger(CommunityController.class);
     @Override
@@ -74,20 +70,13 @@ public class PostServiceImpl implements PostService {
 
         postRequest.setReactionCount(1);
 
-        //
-
         List<Flair> flairs = new ArrayList<>();
 
         Post post;
 
-        logger.info("LOGGER: " + LocalDateTime.now() + " - Getting data for saving post CJECK ...");
-
         if(Objects.isNull(postRequest.getFlairs())) {
 
             post = postRepository.save(postMapper.map(postRequest, community, user, flairs));
-
-            Flair data = flairRepository.findByNameAndCommunityId("Sexy",
-                    community.getCommunityId()).orElseThrow();
 
         } else {
 
@@ -101,8 +90,6 @@ public class PostServiceImpl implements PostService {
 
         }
 
-        //
-
         ReactionDTO reactionDTO = new ReactionDTO();
 
         reactionDTO.setReactionType(ReactionType.UPVOTE);
@@ -110,24 +97,19 @@ public class PostServiceImpl implements PostService {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - saving post to database");
 
-        // here implement flair saving
-
-        //find flair by id
-
-        //post.getFlair().add(flairRepository.findById(1L).orElseThrow());
-
-        //post.getFlair().add(flairRepository.findById(7L).orElseThrow());
-        //
-
         reactionRepository.save(reactionMapper.mapDTOToReaction(reactionDTO, post, user, null));
     }
 
     @Override
-    public List<PostResponse> getAllPosts() {
+    public List<PostResponse> getAllPosts(String sortBy) {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Getting all posts in database");
 
-        return postRepository.findPostsByCommunity_IsSuspended(false).stream().map((Post post) ->
+        List<Post> posts = postRepository.findPostsByCommunity_IsSuspended(false);
+
+        posts = sortPosts(sortBy, posts);
+
+        return posts.stream().map((Post post) ->
                 postMapper.mapToDTO(post, commentRepository.countByPostAndIsDeleted(post, false),
                         fileRepository.findFilenameByPost(post))).collect(Collectors.toList());
     }
@@ -145,9 +127,6 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public ResponseEntity<PostRequest> editPost(PostRequest postRequest, Long id, HttpServletRequest request) {
-
-        //TODO test flairs CRUD (flair add, delete, get, edit, also flair CRUD for posts and communities)
-        //TODO refactor code ,,, (try to use lazy loading)
 
         postRequest.setFlairs(postRequest.getFlairs().stream().distinct().collect(toList()));
 
@@ -175,8 +154,6 @@ public class PostServiceImpl implements PostService {
                 post = postMapper.map(postRequest, community, user, flairs);
 
             } else {
-
-                //Here add validation
 
                 flairs = postRequest.getFlairs().stream().map(flairName ->
                         flairRepository.findByNameAndCommunityId(flairName, community.getCommunityId()).
@@ -240,15 +217,40 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostResponse> getPostsByCommunityName(String communityName) {
+    public List<PostResponse> getPostsByCommunityName(String communityName, String sortBy) {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Getting post by name");
 
         Community community = communityRepository.findByNameAndIsSuspended(communityName, false)
                 .orElseThrow(() -> new CommunityNotFoundException("Community not found with specified id"));
 
-        return postRepository.findPostsByCommunity(community).stream().map((Post post) ->
-                        postMapper.mapToDTO(post, commentRepository.countByPostAndIsDeleted(post,
-                                false), fileRepository.findFilenameByPost(post))).collect(Collectors.toList());
+        List<Post> posts = postRepository.findPostsByCommunity(community);
+
+        posts = sortPosts(sortBy, posts);
+
+        return posts.stream().map((Post post) ->
+                postMapper.mapToDTO(post, commentRepository.countByPostAndIsDeleted(post, false),
+                        fileRepository.findFilenameByPost(post))).collect(Collectors.toList());
+    }
+
+    private List<Post> sortPosts(String sortBy, List<Post> posts) {
+
+        if(Objects.isNull(sortBy))
+            sortBy = "";
+
+        switch (sortBy) {
+            case "new":
+                if(!posts.isEmpty())
+                    posts.sort((obj1, obj2) -> obj2.getCreationDate().compareTo(obj1.getCreationDate()));
+                break;
+            case "top":
+                if(!posts.isEmpty())
+                    posts.sort((obj1, obj2) -> obj2.getReactionCount().compareTo(obj1.getReactionCount()));
+                break;
+            case "hot":
+                posts = sortService.hotSortPosts(posts);
+                break;
+        }
+        return posts;
     }
 }

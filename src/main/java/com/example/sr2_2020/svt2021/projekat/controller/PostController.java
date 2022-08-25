@@ -35,11 +35,11 @@ public class PostController {
     }
 
     @RequestMapping(value = "/getAllPosts")
-    public ResponseEntity<List<PostResponse>> getAllPosts() {
+    public ResponseEntity<List<PostResponse>> getAllPosts(@RequestParam(required = false) String sortBy) {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Get all posts method has been called");
 
-        return new ResponseEntity<>(postService.getAllPosts(), HttpStatus.OK);
+        return new ResponseEntity<>(postService.getAllPosts(sortBy), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}")
@@ -69,11 +69,12 @@ public class PostController {
     }
 
     @RequestMapping("/communityName={communityName}")
-    public ResponseEntity<List<PostResponse>> getCommunityPosts(@PathVariable String communityName) {
+    public ResponseEntity<List<PostResponse>> getCommunityPosts(@PathVariable String communityName,
+        @RequestParam(required = false) String sortBy) {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Get posts by community method has been called");
 
-        return ResponseEntity.status(HttpStatus.OK).body(postService.getPostsByCommunityName(communityName));
+        return ResponseEntity.status(HttpStatus.OK).body(postService.getPostsByCommunityName(communityName, sortBy));
     }
 
 }
