@@ -35,12 +35,12 @@ public class CommentController {
     }
 
     @RequestMapping(value = "/getPostComments/{id}")
-    public ResponseEntity<List<CommentDTOResponse>> getPostComments (@PathVariable Long id, HttpServletRequest request)
-    {
+    public ResponseEntity<List<CommentDTOResponse>> getPostComments (@PathVariable Long id,
+        @RequestParam(required = false) String sortBy, HttpServletRequest request) {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Get post comments method has been called");
 
-        return new ResponseEntity<>(commentService.getPostComments(id, request), HttpStatus.OK);
+        return new ResponseEntity<>(commentService.getPostComments(id, sortBy, request), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}")

@@ -14,6 +14,8 @@ import java.util.Set;
 @NoArgsConstructor
 public class PostRequest {
 
+    //TODO merge DTO Response and DTO Request to one big DTO (for all DTOs)...
+
     private Long postId;
     private String communityName;
     private String creationDate;

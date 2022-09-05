@@ -248,7 +248,8 @@ public class PostServiceImpl implements PostService {
                     posts.sort((obj1, obj2) -> obj2.getReactionCount().compareTo(obj1.getReactionCount()));
                 break;
             case "hot":
-                posts = sortService.hotSortPosts(posts);
+                if(!posts.isEmpty())
+                    posts = sortService.hotSortPosts(posts);
                 break;
         }
         return posts;

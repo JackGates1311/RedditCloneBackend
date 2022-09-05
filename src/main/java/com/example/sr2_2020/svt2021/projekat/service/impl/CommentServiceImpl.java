@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -118,7 +119,10 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<CommentDTOResponse> getPostComments(Long id, HttpServletRequest request) {
+    public List<CommentDTOResponse> getPostComments(Long id, String sortBy, HttpServletRequest request) {
+
+        if(Objects.isNull(sortBy))
+            sortBy = "";
 
         Post post = postRepository.findById(id).orElseThrow(() -> new PostNotFoundException(
                 "Post not found for ID: " + id));
@@ -129,7 +133,10 @@ public class CommentServiceImpl implements CommentService {
 
         List<Long> childCommentsList = new ArrayList<>();
 
-        for (Comment comment : commentRepository.findAllByPostAndIsDeleted(post, false)) {
+        List<Comment> comments = sortComments(sortBy, commentRepository.findAllByPostAndIsDeleted(post,
+                false));
+
+        for (Comment comment : comments) {
 
             // get nested replies here
 
@@ -160,7 +167,8 @@ public class CommentServiceImpl implements CommentService {
 
             }
 
-            CommentDTOResponse commentDTOResponse = commentMapper.mapCommentToDTO(comment, replies);
+            CommentDTOResponse commentDTOResponse = commentMapper.mapCommentToDTO(comment, sortCommentReplies(
+                    sortBy, replies));
 
             commentDTOResponseList.add(commentDTOResponse);
         }
@@ -374,6 +382,44 @@ public class CommentServiceImpl implements CommentService {
         }
 
         //
+    }
+
+
+    private List<Comment> sortComments(String sortBy, List<Comment> comments) {
+
+        sortData(sortBy, comments, null);
+
+        return comments;
+    }
+
+    private List<CommentDTOResponse> sortCommentReplies(String sortBy, List<CommentDTOResponse> replies) {
+
+        sortData(sortBy, null, replies);
+
+        return replies;
+    }
+
+    private void sortData(String sortBy, List<Comment> comments, List<CommentDTOResponse> replies) {
+        switch (sortBy) {
+            case "top":
+                if(!Objects.isNull(comments))
+                    comments.sort((obj1, obj2) -> obj2.getReactionCount().compareTo(obj1.getReactionCount()));
+                else if(!Objects.isNull(replies))
+                    replies.sort((obj1, obj2) -> obj2.getReactionCount().compareTo(obj1.getReactionCount()));
+                break;
+            case "new":
+                if(!Objects.isNull(comments))
+                    comments.sort((obj1, obj2) -> obj2.getTimestamp().compareTo(obj1.getTimestamp()));
+                else if(!Objects.isNull(replies))
+                    replies.sort((obj1, obj2) -> obj2.getTimestamp().compareTo(obj1.getTimestamp()));
+                break;
+            case "old":
+                if(!Objects.isNull(comments))
+                    comments.sort(Comparator.comparing(Comment::getTimestamp));
+                else if(!Objects.isNull(replies))
+                    replies.sort(Comparator.comparing(CommentDTOResponse::getTimestamp));
+                break;
+        }
     }
 
 }

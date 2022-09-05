@@ -26,7 +26,7 @@ public class FileController {
     }
 
     @RequestMapping(value="/upload", method = RequestMethod.POST)
-    public ResponseEntity<FileResponse> fileUpload(@RequestParam("files") MultipartFile[] multipartFiles,
+    public ResponseEntity<FileResponse> uploadFile(@RequestParam("files") MultipartFile[] multipartFiles,
         @RequestParam(required = false) Long postId, HttpServletRequest request) throws IOException {
 
         return fileService.uploadFile(savePath, multipartFiles, postId, request);

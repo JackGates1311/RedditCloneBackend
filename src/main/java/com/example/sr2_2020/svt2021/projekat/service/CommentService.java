@@ -13,7 +13,7 @@ public interface CommentService {
     void save(CommentDTORequest commentDTO, HttpServletRequest request);
 
     @Transactional
-    List<CommentDTOResponse> getPostComments(Long id, HttpServletRequest request);
+    List<CommentDTOResponse> getPostComments(Long id, String sortBy, HttpServletRequest request);
 
     @Transactional
     ResponseEntity<String> editComment(CommentDTORequest commentDTORequest, Long id, HttpServletRequest

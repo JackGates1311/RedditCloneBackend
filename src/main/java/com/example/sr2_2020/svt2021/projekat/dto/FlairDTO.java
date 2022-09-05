@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class FlairDTO {
 
-    Long flairId;
-    String name;
+    private Long flairId;
+    private String name;
 
 }

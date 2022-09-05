@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class FileResponse {
 
-    String fileNames;
-    String message;
+    private String fileNames;
+    private String message;
 }
