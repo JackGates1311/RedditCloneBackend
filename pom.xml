@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.6.7</version>
+        <version>2.6.14</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.example.sr2_2020.svt2021.projekat</groupId>
@@ -34,10 +34,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-rest</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-jdbc</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -116,17 +112,21 @@
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
-            <version>1.5.1.Final</version>
+            <version>1.5.4.Final</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.hibernate.orm.tooling</groupId>
             <artifactId>hibernate-enhance-maven-plugin</artifactId>
-            <version>6.1.0.Final</version>
+            <version>6.1.7.Final</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-log4j2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
         </dependency>
     </dependencies>
 
@@ -153,7 +153,6 @@
                     <dependency>
                         <groupId>org.springframework.restdocs</groupId>
                         <artifactId>spring-restdocs-asciidoctor</artifactId>
-                        <version>${spring-restdocs.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -240,13 +239,6 @@
                 <repackage.classifier>exec</repackage.classifier>
                 <native-buildtools.version>0.9.11</native-buildtools.version>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>org.junit.platform</groupId>
-                    <artifactId>junit-platform-launcher</artifactId>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
             <build>
                 <plugins>
                 </plugins>
