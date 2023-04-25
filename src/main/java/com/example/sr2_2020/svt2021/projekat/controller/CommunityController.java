@@ -2,6 +2,8 @@ package com.example.sr2_2020.svt2021.projekat.controller;
 
 import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTORequest;
 import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTOResponse;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.model.CommunitySearching;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.services.CommunitySearchingService;
 import com.example.sr2_2020.svt2021.projekat.service.CommunityService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +22,9 @@ import java.util.List;
 @AllArgsConstructor
 @Slf4j
 public class CommunityController {
-
     private final CommunityService communityService;
+
+    private final CommunitySearchingService communitySearchingService;
 
     static final Logger logger = LogManager.getLogger(CommunityController.class);
 
@@ -75,4 +78,23 @@ public class CommunityController {
         return communityService.suspendCommunityById(communityDTORequest, id, request);
 
     }
+
+    @RequestMapping(value = "/search", method = RequestMethod.GET)
+    public ResponseEntity<List<CommunitySearching>> searchCommunities(
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "description", required = false) String description) {
+
+        String query = "";
+
+        if(name != null) {
+           query = "name: " + name;
+        }
+
+        if(description != null) {
+            query = "description: " + description;
+        }
+
+        return communitySearchingService.searchCommunities(query);
+    }
+
 }

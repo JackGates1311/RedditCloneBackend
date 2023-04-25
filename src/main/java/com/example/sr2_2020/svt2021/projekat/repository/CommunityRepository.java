@@ -14,5 +14,4 @@ public interface CommunityRepository extends JpaRepository<Community, Long> {
     List<Community> findCommunitiesByIsSuspended (Boolean isSuspended);
 
     Optional<Community> findByCommunityIdAndIsSuspended (Long id, Boolean isSuspended);
-
 }

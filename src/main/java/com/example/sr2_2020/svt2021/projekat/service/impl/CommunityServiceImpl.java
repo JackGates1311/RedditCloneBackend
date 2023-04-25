@@ -3,13 +3,14 @@ package com.example.sr2_2020.svt2021.projekat.service.impl;
 import com.example.sr2_2020.svt2021.projekat.controller.CommunityController;
 import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTORequest;
 import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTOResponse;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.model.CommunitySearching;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.repository.CommunitySearchingRepository;
 import com.example.sr2_2020.svt2021.projekat.exception.CommunityNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneException;
 import com.example.sr2_2020.svt2021.projekat.mapper.CommunityMapper;
 import com.example.sr2_2020.svt2021.projekat.model.Banned;
 import com.example.sr2_2020.svt2021.projekat.model.Community;
 import com.example.sr2_2020.svt2021.projekat.model.Flair;
-import com.example.sr2_2020.svt2021.projekat.model.Post;
 import com.example.sr2_2020.svt2021.projekat.repository.*;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.CommunityService;
@@ -20,13 +21,11 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
@@ -49,6 +48,8 @@ public class CommunityServiceImpl implements CommunityService {
 
     private final PostRepository postRepository;
 
+    private final CommunitySearchingRepository communitySearchingRepository;
+
     static final Logger logger = LogManager.getLogger(CommunityController.class);
 
     @Override
@@ -67,7 +68,7 @@ public class CommunityServiceImpl implements CommunityService {
 
         if(Objects.isNull(communityDTORequest.getFlairs())) {
 
-            communityRepository.save(communityMapper.mapDTOToCommunity(communityDTORequest, flairs));
+            newCommunity = communityRepository.save(communityMapper.mapDTOToCommunity(communityDTORequest, flairs));
 
         } else {
 
@@ -79,6 +80,16 @@ public class CommunityServiceImpl implements CommunityService {
 
             flairs.forEach(flair -> flair.getCommunities().add(newCommunity));
         }
+
+        //
+
+        try {
+            communitySearchingRepository.save(new CommunitySearching(newCommunity.getCommunityId().toString(),
+                    newCommunity.getName(), newCommunity.getDescription()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(e.toString());
+        }
+
 
         //
 
