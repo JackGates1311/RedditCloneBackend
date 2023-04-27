@@ -2,6 +2,8 @@ package com.example.sr2_2020.svt2021.projekat.service.impl;
 
 import com.example.sr2_2020.svt2021.projekat.controller.CommunityController;
 import com.example.sr2_2020.svt2021.projekat.dto.*;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.model.CommunitySearching;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.repository.CommunitySearchingRepositoryQuery;
 import com.example.sr2_2020.svt2021.projekat.exception.CommunityNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.PostNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneException;
@@ -53,6 +55,8 @@ public class PostServiceImpl implements PostService {
 
     private final SortService sortService;
 
+    private final CommunitySearchingRepositoryQuery communitySearchingRepositoryQuery;
+
     static final Logger logger = LogManager.getLogger(CommunityController.class);
     @Override
     public void save(PostRequest postRequest, HttpServletRequest request) {
@@ -98,6 +102,15 @@ public class PostServiceImpl implements PostService {
         logger.info("LOGGER: " + LocalDateTime.now() + " - saving post to database");
 
         reactionRepository.save(reactionMapper.mapDTOToReaction(reactionDTO, post, user, null));
+
+        community.setPosts(postRepository.findPostsByCommunity(community));
+
+        try {
+            communitySearchingRepositoryQuery.update(new CommunitySearching(community.getCommunityId().toString(),
+                    community.getName(), community.getDescription(), community.getPosts().size()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

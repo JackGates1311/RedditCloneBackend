@@ -1,56 +1,76 @@
 package com.example.sr2_2020.svt2021.projekat.elasticsearch.repository;
 
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.model.CommunitySearching;
-import com.example.sr2_2020.svt2021.projekat.model.Community;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
-import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
-import org.springframework.data.elasticsearch.core.IndexOperations;
-import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.*;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
-import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
-import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
+import org.springframework.data.elasticsearch.core.query.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class CommunitySearchingRepositoryQuery {
     private final ElasticsearchOperations elasticsearchOperations;
-    private final ElasticsearchRestTemplate elasticsearchTemplate;
+    private final ElasticsearchRestTemplate elasticsearchRestTemplate;
     
     public CommunitySearchingRepositoryQuery(ElasticsearchOperations elasticsearchOperations,
-                                             ElasticsearchRestTemplate elasticsearchTemplate) {
+                                             ElasticsearchRestTemplate elasticsearchRestTemplate) {
         this.elasticsearchOperations = elasticsearchOperations;
-        this.elasticsearchTemplate = elasticsearchTemplate;
+        this.elasticsearchRestTemplate = elasticsearchRestTemplate;
     }
 
-    public Community findById(String id) {
-        return elasticsearchTemplate.get(id, Community.class);
+    public void update(CommunitySearching communitySearching) {
+        IndexQuery indexQuery = new IndexQueryBuilder()
+                .withId(communitySearching.getId())
+                .withObject(communitySearching)
+                .build();
+
+        elasticsearchRestTemplate.index(indexQuery, IndexCoordinates.of("communities"));
     }
 
-    public void deleteById(String id) {
-        elasticsearchTemplate.delete(id, Community.class);
-    }
+    public ResponseEntity<List<CommunitySearching>> search(String name, String description, Integer minPosts,
+                                                                   Integer maxPosts, Boolean isMust) {
 
-    public void deleteAll() {
-        IndexOperations indexOps = elasticsearchTemplate.indexOps(Community.class);
+        BoolQueryBuilder boolQuery = new BoolQueryBuilder();
 
-        if (indexOps.exists()) {
-            indexOps.delete();
-            indexOps.create();
-            indexOps.refresh();
+        if (name != null) {
+            QueryBuilder nameQuery = QueryBuilders.queryStringQuery("name: " + name);
+
+            if(isMust)
+                boolQuery.must(nameQuery);
+            else
+                boolQuery.should(nameQuery);
         }
 
-    }
+        if (description != null) {
+            QueryBuilder descriptionQuery = QueryBuilders.queryStringQuery("description: " + description);
 
-    public ResponseEntity<List<CommunitySearching>> search(String query) {
-        NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
-                .withQuery(QueryBuilders.queryStringQuery(query)).build();
+            if(isMust)
+                boolQuery.must(descriptionQuery);
+            else
+                boolQuery.should(descriptionQuery);
+        }
 
-        SearchHits<CommunitySearching> searchHits = elasticsearchOperations
-                .search(searchQuery, CommunitySearching.class, IndexCoordinates.of("communities"));
+        if (minPosts != null || maxPosts != null) {
+            QueryBuilder postCountQuery;
+            if (minPosts == null) {
+                postCountQuery = QueryBuilders.rangeQuery("postCount").to(maxPosts);
+            } else if (maxPosts == null) {
+                postCountQuery = QueryBuilders.rangeQuery("postCount").from(minPosts);
+            } else {
+                postCountQuery = QueryBuilders.rangeQuery("postCount").from(minPosts).to(maxPosts);
+            }
+            if(isMust)
+                boolQuery.must(postCountQuery);
+            else
+                boolQuery.should(postCountQuery);
+        }
+
+        SearchHits<CommunitySearching> searchHits = elasticsearchOperations.search(
+                new NativeSearchQueryBuilder().withQuery(boolQuery).build(),
+                CommunitySearching.class, IndexCoordinates.of("communities"));
 
         List<CommunitySearching> communities = new ArrayList<>();
         searchHits.forEach(hit -> communities.add(hit.getContent()));

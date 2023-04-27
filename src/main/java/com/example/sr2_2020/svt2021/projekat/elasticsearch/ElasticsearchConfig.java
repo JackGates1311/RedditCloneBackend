@@ -36,7 +36,7 @@ public class ElasticsearchConfig {
     }
 
     @Bean
-    public CommunitySearchingRepositoryQuery communitySearchingRepositoryManual(
+    public CommunitySearchingRepositoryQuery communitySearchingRepositoryQuery(
             ElasticsearchOperations elasticsearchOperations, ElasticsearchRestTemplate elasticsearchTemplate) {
         return new CommunitySearchingRepositoryQuery(elasticsearchOperations, elasticsearchTemplate);
     }

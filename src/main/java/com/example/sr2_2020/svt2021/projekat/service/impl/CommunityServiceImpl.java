@@ -85,7 +85,7 @@ public class CommunityServiceImpl implements CommunityService {
 
         try {
             communitySearchingRepository.save(new CommunitySearching(newCommunity.getCommunityId().toString(),
-                    newCommunity.getName(), newCommunity.getDescription()));
+                    newCommunity.getName(), newCommunity.getDescription(), 0));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(e.toString());
         }

@@ -82,19 +82,15 @@ public class CommunityController {
     @RequestMapping(value = "/search", method = RequestMethod.GET)
     public ResponseEntity<List<CommunitySearching>> searchCommunities(
             @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "description", required = false) String description) {
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "min", required = false) Integer minPosts,
+            @RequestParam(value = "max", required = false) Integer maxPosts,
+            @RequestParam(value = "isMust", required = false) Boolean isMust
+    ) {
 
-        String query = "";
+        if(isMust == null)
+            isMust = true;
 
-        if(name != null) {
-           query = "name: " + name;
-        }
-
-        if(description != null) {
-            query = "description: " + description;
-        }
-
-        return communitySearchingService.searchCommunities(query);
+        return communitySearchingService.searchCommunities(name, description, minPosts, maxPosts, isMust);
     }
-
 }

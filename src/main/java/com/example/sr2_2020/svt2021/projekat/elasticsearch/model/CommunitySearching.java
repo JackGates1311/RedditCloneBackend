@@ -21,4 +21,6 @@ public class CommunitySearching {
     private String name;
     @Field(type = FieldType.Text)
     private String description;
+    @Field(type = FieldType.Integer)
+    private Integer postCount;
 }

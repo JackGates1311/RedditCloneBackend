@@ -17,7 +17,8 @@ public class CommunitySearchingServiceImpl implements CommunitySearchingService 
     }
 
     @Override
-    public ResponseEntity<List<CommunitySearching>> searchCommunities(String query) {
-        return communitySearchingRepositoryQuery.search(query);
+    public ResponseEntity<List<CommunitySearching>> searchCommunities(String name, String description, Integer minPosts,
+                                                                      Integer maxPosts, Boolean isMust) {
+        return communitySearchingRepositoryQuery.search(name, description, minPosts, maxPosts, isMust);
     }
 }

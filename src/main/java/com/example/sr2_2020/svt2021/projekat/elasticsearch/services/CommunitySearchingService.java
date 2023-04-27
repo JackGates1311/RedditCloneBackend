@@ -10,5 +10,6 @@ import java.util.List;
 
 @Service
 public interface CommunitySearchingService {
-    ResponseEntity<List<CommunitySearching>> searchCommunities(String query);
+    ResponseEntity<List<CommunitySearching>> searchCommunities(String name, String description, Integer minPosts,
+                                                               Integer maxPosts, Boolean isMust);
 }
