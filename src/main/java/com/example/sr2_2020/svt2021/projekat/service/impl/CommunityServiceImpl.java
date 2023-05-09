@@ -5,6 +5,7 @@ import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTORequest;
 import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTOResponse;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.model.CommunitySearching;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.repository.CommunitySearchingRepository;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.repository.CommunitySearchingRepositoryQuery;
 import com.example.sr2_2020.svt2021.projekat.exception.CommunityNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneException;
 import com.example.sr2_2020.svt2021.projekat.mapper.CommunityMapper;
@@ -14,6 +15,9 @@ import com.example.sr2_2020.svt2021.projekat.model.Flair;
 import com.example.sr2_2020.svt2021.projekat.repository.*;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.CommunityService;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfWriter;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
@@ -21,12 +25,14 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
-
 import static java.util.stream.Collectors.toList;
 
 @Service
@@ -50,6 +56,8 @@ public class CommunityServiceImpl implements CommunityService {
 
     private final CommunitySearchingRepository communitySearchingRepository;
 
+    private final CommunitySearchingRepositoryQuery communitySearchingRepositoryQuery;
+
     static final Logger logger = LogManager.getLogger(CommunityController.class);
 
     @Override
@@ -59,7 +67,7 @@ public class CommunityServiceImpl implements CommunityService {
 
         communityDTORequest.setIsSuspended(false);
 
-        // TODO while creating new community, community moderator can add (before sending create comunity request)
+        // TODO while creating new community, community moderator can add (before sending create community request)
         //  flairs (with add flair request, after we can select newly added flair) from or use already added flairs...
 
         List<Flair> flairs = new ArrayList<>();
@@ -81,17 +89,15 @@ public class CommunityServiceImpl implements CommunityService {
             flairs.forEach(flair -> flair.getCommunities().add(newCommunity));
         }
 
-        //
-
         try {
             communitySearchingRepository.save(new CommunitySearching(newCommunity.getCommunityId().toString(),
                     newCommunity.getName(), newCommunity.getDescription(), 0));
+
+            createCommunityPdfDocument(newCommunity);
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(e.toString());
         }
-
-
-        //
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - saving community to database");
 
@@ -231,4 +237,53 @@ public class CommunityServiceImpl implements CommunityService {
         return communityMapper.mapCommunityToDTO(community);
     }
 
+    @Override
+    public void createCommunityPdfDocument(Community community) {
+
+        String pdfDirectory = "documents/";
+
+        File directory = new File(pdfDirectory);
+        if (!directory.exists()) {
+            if(!directory.mkdirs())
+                logger.error("Error while creating directory" + pdfDirectory);
+
+        }
+
+        String filePath = null;
+
+        Document document = new Document();
+
+        try {
+
+            filePath = (pdfDirectory + community.getName() + ".pdf").replaceAll("\\s+", "").
+                    toLowerCase();
+
+            PdfWriter.getInstance(document, new FileOutputStream(filePath));
+
+            document.open();
+            BaseFont baseFont = BaseFont.createFont("src/main/resources/fonts/font.ttf",
+                    BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+            com.itextpdf.text.Font font = new com.itextpdf.text.Font(baseFont, 12);
+
+            Paragraph nameParagraph = new Paragraph(community.getName(), font);
+            nameParagraph.setSpacingAfter(25f);
+
+            document.add(nameParagraph);
+
+            Paragraph descriptionParagraph = new Paragraph(community.getDescription(), font);
+
+            document.add(descriptionParagraph);
+
+        } catch (DocumentException | IOException e) {
+            e.printStackTrace();
+        } finally {
+            document.close();
+        }
+
+        try {
+            communitySearchingRepositoryQuery.indexPdf(filePath);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

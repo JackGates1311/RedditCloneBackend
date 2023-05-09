@@ -1,6 +1,8 @@
 package com.example.sr2_2020.svt2021.projekat.elasticsearch.repository;
 
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.model.CommunitySearching;
+import com.itextpdf.text.pdf.PdfReader;
+import com.itextpdf.text.pdf.parser.PdfTextExtractor;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -9,6 +11,8 @@ import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import java.io.*;
+import java.nio.file.Files;
 import java.util.*;
 
 public class CommunitySearchingRepositoryQuery {
@@ -31,7 +35,13 @@ public class CommunitySearchingRepositoryQuery {
     }
 
     public ResponseEntity<List<CommunitySearching>> search(String name, String description, Integer minPosts,
-                                                                   Integer maxPosts, Boolean isMust) {
+                                                           Integer maxPosts, Boolean isMust, Boolean isPdfIndex) {
+        String indexName;
+
+        if(isPdfIndex)
+            indexName="communities-pdf";
+        else
+            indexName="communities";
 
         BoolQueryBuilder boolQuery = new BoolQueryBuilder();
 
@@ -70,11 +80,43 @@ public class CommunitySearchingRepositoryQuery {
 
         SearchHits<CommunitySearching> searchHits = elasticsearchOperations.search(
                 new NativeSearchQueryBuilder().withQuery(boolQuery).build(),
-                CommunitySearching.class, IndexCoordinates.of("communities"));
+                CommunitySearching.class, IndexCoordinates.of(indexName));
 
         List<CommunitySearching> communities = new ArrayList<>();
         searchHits.forEach(hit -> communities.add(hit.getContent()));
 
         return new ResponseEntity<>(communities, HttpStatus.OK);
+    }
+
+    public void indexPdf(String pdfFilePath) throws IOException {
+
+        File pdfFile = new File(pdfFilePath);
+
+        byte[] pdfContent = Files.readAllBytes(pdfFile.toPath());
+
+        PdfReader pdfReader = new PdfReader(pdfContent);
+
+        StringBuilder pdfText = getPdfText(pdfReader);
+
+        Map<String, Object> pdfDocument = new HashMap<>();
+        pdfDocument.put("id", UUID.randomUUID().toString());
+        pdfDocument.put("name", pdfText.toString().split("\r?\n")[0]);
+        pdfDocument.put("description", pdfText.toString());
+
+        IndexQuery indexQuery = new IndexQueryBuilder().withObject(pdfDocument).build();
+        elasticsearchRestTemplate.index(indexQuery, IndexCoordinates.of("communities-pdf"));
+
+        pdfReader.close();
+    }
+
+    public StringBuilder getPdfText(PdfReader pdfReader) throws IOException {
+        int pages = pdfReader.getNumberOfPages();
+
+        StringBuilder pdfText = new StringBuilder();
+
+        for (int i = 1; i <= pages; i++) {
+            pdfText.append(PdfTextExtractor.getTextFromPage(pdfReader, i));
+        }
+        return pdfText;
     }
 }

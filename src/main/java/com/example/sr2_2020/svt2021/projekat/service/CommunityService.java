@@ -2,9 +2,11 @@ package com.example.sr2_2020.svt2021.projekat.service;
 
 import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTORequest;
 import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTOResponse;
+import com.example.sr2_2020.svt2021.projekat.model.Community;
 import org.springframework.http.ResponseEntity;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
+import java.io.IOException;
 import java.util.List;
 
 public interface CommunityService {
@@ -26,4 +28,6 @@ public interface CommunityService {
 
     @Transactional
     CommunityDTOResponse getCommunityByName(String name);
+
+    void createCommunityPdfDocument(Community community) throws IOException;
 }

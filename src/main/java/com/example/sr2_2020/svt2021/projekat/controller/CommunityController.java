@@ -13,7 +13,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -85,12 +88,40 @@ public class CommunityController {
             @RequestParam(value = "description", required = false) String description,
             @RequestParam(value = "min", required = false) Integer minPosts,
             @RequestParam(value = "max", required = false) Integer maxPosts,
-            @RequestParam(value = "isMust", required = false) Boolean isMust
+            @RequestParam(value = "isMust", required = false) Boolean isMust,
+            @RequestParam(value = "isPdfIndex", required = false) Boolean isPdfIndex
     ) {
 
         if(isMust == null)
             isMust = true;
+        if(isPdfIndex == null)
+            isPdfIndex = false;
 
-        return communitySearchingService.searchCommunities(name, description, minPosts, maxPosts, isMust);
+        return communitySearchingService.searchCommunities(name, description, minPosts, maxPosts, isMust, isPdfIndex);
+    }
+
+    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    public ResponseEntity<List<CommunitySearching>> searchCommunitiesByPdfDocument(
+            @RequestParam("file") MultipartFile pdfFile,
+            @RequestParam(value = "isPdfIndex", required = false) Boolean isPdfIndex
+    ) {
+
+        byte[] pdfContent;
+
+        try {
+            pdfContent = pdfFile.getBytes();
+        } catch (IOException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        String description = communitySearchingService.getPdfText(pdfContent);
+
+        logger.info("Text successfully caught from PDF document: " + description);
+
+        if(isPdfIndex == null)
+            isPdfIndex = true;
+
+        return communitySearchingService.searchCommunities(null, description, null, null,
+                true, isPdfIndex);
     }
 }

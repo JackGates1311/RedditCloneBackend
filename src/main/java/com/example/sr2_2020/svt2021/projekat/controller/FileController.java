@@ -48,10 +48,8 @@ public class FileController {
         StreamUtils.copy(this.fileService.getFile(savePath, filename), response.getOutputStream());
     }
 
-
     @RequestMapping(value = "/delete/{filename}", method = RequestMethod.DELETE)
     public ResponseEntity<FileResponse> deleteFile(@PathVariable("filename") String filename) throws IOException {
-
         return fileService.deleteFile(savePath, filename);
     }
 }
