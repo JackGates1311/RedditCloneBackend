@@ -107,7 +107,7 @@ public class PostServiceImpl implements PostService {
 
         try {
             communitySearchingRepositoryQuery.update(new CommunitySearching(community.getCommunityId().toString(),
-                    community.getName(), community.getDescription(), community.getPosts().size()));
+                    community.getName(), community.getDescription(), community.getPosts().size(), null));
         } catch (Exception e) {
             e.printStackTrace();
         }

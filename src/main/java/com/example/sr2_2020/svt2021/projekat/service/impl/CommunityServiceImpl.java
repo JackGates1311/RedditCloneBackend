@@ -91,7 +91,7 @@ public class CommunityServiceImpl implements CommunityService {
 
         try {
             communitySearchingRepository.save(new CommunitySearching(newCommunity.getCommunityId().toString(),
-                    newCommunity.getName(), newCommunity.getDescription(), 0));
+                    newCommunity.getName(), newCommunity.getDescription(), 0, null));
 
             createCommunityPdfDocument(newCommunity);
 

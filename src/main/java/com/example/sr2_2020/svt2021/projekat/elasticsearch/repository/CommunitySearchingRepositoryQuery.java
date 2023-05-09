@@ -6,6 +6,7 @@ import com.itextpdf.text.pdf.parser.PdfTextExtractor;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.springframework.data.elasticsearch.core.*;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.*;
@@ -78,12 +79,27 @@ public class CommunitySearchingRepositoryQuery {
                 boolQuery.should(postCountQuery);
         }
 
+        HighlightBuilder highlightBuilder = new HighlightBuilder()
+                .field("name").field("description").field("description.highlighted");
+
         SearchHits<CommunitySearching> searchHits = elasticsearchOperations.search(
-                new NativeSearchQueryBuilder().withQuery(boolQuery).build(),
+                new NativeSearchQueryBuilder().withQuery(boolQuery).withHighlightBuilder(highlightBuilder).build(),
                 CommunitySearching.class, IndexCoordinates.of(indexName));
 
         List<CommunitySearching> communities = new ArrayList<>();
-        searchHits.forEach(hit -> communities.add(hit.getContent()));
+
+        searchHits.forEach(hit -> {
+            CommunitySearching community = hit.getContent();
+            Map<String, List<String>> highlightFields = hit.getHighlightFields();
+            if (highlightFields.containsKey("name")) {
+                community.setHighlighterText(highlightFields.get("name").get(0));
+            }
+            if (highlightFields.containsKey("description")) {
+                List<String> highlightedDescriptions = highlightFields.get("description");
+                community.setHighlighterText(highlightedDescriptions.get(0));
+            }
+            communities.add(community);
+        });
 
         return new ResponseEntity<>(communities, HttpStatus.OK);
     }
