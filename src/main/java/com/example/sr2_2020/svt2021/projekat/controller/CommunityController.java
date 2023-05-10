@@ -86,8 +86,10 @@ public class CommunityController {
     public ResponseEntity<List<CommunitySearching>> searchCommunities(
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "description", required = false) String description,
-            @RequestParam(value = "min", required = false) Integer minPosts,
-            @RequestParam(value = "max", required = false) Integer maxPosts,
+            @RequestParam(value = "minPosts", required = false) Integer minPosts,
+            @RequestParam(value = "maxPosts", required = false) Integer maxPosts,
+            @RequestParam(value = "minKarma", required = false) Float minKarma,
+            @RequestParam(value = "maxKarma", required = false) Float maxKarma,
             @RequestParam(value = "isMust", required = false) Boolean isMust,
             @RequestParam(value = "isPdfIndex", required = false) Boolean isPdfIndex
     ) {
@@ -97,7 +99,8 @@ public class CommunityController {
         if(isPdfIndex == null)
             isPdfIndex = false;
 
-        return communitySearchingService.searchCommunities(name, description, minPosts, maxPosts, isMust, isPdfIndex);
+        return communitySearchingService.searchCommunities(name, description, minPosts, maxPosts, isMust, isPdfIndex,
+                minKarma, maxKarma);
     }
 
     @RequestMapping(value = "/search", method = RequestMethod.POST)
@@ -122,6 +125,6 @@ public class CommunityController {
             isPdfIndex = true;
 
         return communitySearchingService.searchCommunities(null, description, null, null,
-                true, isPdfIndex);
+                true, isPdfIndex, null, null);
     }
 }

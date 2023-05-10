@@ -4,6 +4,7 @@ import com.example.sr2_2020.svt2021.projekat.controller.CommunityController;
 import com.example.sr2_2020.svt2021.projekat.dto.*;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.model.CommunitySearching;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.repository.CommunitySearchingRepositoryQuery;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.services.CommunitySearchingService;
 import com.example.sr2_2020.svt2021.projekat.exception.CommunityNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.PostNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneException;
@@ -57,6 +58,8 @@ public class PostServiceImpl implements PostService {
 
     private final CommunitySearchingRepositoryQuery communitySearchingRepositoryQuery;
 
+    private final CommunitySearchingService communitySearchingService;
+
     static final Logger logger = LogManager.getLogger(CommunityController.class);
     @Override
     public void save(PostRequest postRequest, HttpServletRequest request) {
@@ -107,7 +110,9 @@ public class PostServiceImpl implements PostService {
 
         try {
             communitySearchingRepositoryQuery.update(new CommunitySearching(community.getCommunityId().toString(),
-                    community.getName(), community.getDescription(), community.getPosts().size(), null));
+                    community.getName(), community.getDescription(), community.getPosts().size(),
+                    communitySearchingService.calculateCommunityAverageKarma(community.getPosts()), null),
+                    "communities");
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -23,6 +23,8 @@ public class CommunitySearching {
     private String description;
     @Field(type = FieldType.Integer)
     private Integer postCount;
+    @Field(type = FieldType.Float)
+    private Float averageKarma;
     @Field(type = FieldType.Text)
     private String highlighterText;
 }

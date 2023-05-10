@@ -3,6 +3,7 @@ package com.example.sr2_2020.svt2021.projekat.elasticsearch.services.impl;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.model.CommunitySearching;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.repository.CommunitySearchingRepositoryQuery;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.services.CommunitySearchingService;
+import com.example.sr2_2020.svt2021.projekat.model.Post;
 import com.itextpdf.text.pdf.PdfReader;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -19,9 +20,11 @@ public class CommunitySearchingServiceImpl implements CommunitySearchingService 
     }
 
     @Override
-    public ResponseEntity<List<CommunitySearching>> searchCommunities(String name, String description, Integer minPosts,
-                                                                      Integer maxPosts, Boolean isMust, Boolean isPdfIndex) {
-        return communitySearchingRepositoryQuery.search(name, description, minPosts, maxPosts, isMust, isPdfIndex);
+    public ResponseEntity<List<CommunitySearching>> searchCommunities(
+            String name, String description, Integer minPosts, Integer maxPosts, Boolean isMust, Boolean isPdfIndex,
+            Float minKarma, Float maxKarma) {
+        return communitySearchingRepositoryQuery.search(name, description, minPosts, maxPosts, isMust, isPdfIndex,
+                minKarma, maxKarma);
     }
 
     @Override
@@ -31,5 +34,14 @@ public class CommunitySearchingServiceImpl implements CommunitySearchingService 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public Float calculateCommunityAverageKarma(List<Post> communityPosts) {
+        Float sum = 0.0F;
+
+        for(Post postData : communityPosts) sum += postData.getReactionCount();
+
+        return sum / (float) communityPosts.size();
     }
 }

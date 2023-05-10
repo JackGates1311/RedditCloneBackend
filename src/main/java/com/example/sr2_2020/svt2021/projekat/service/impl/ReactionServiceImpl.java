@@ -2,15 +2,16 @@ package com.example.sr2_2020.svt2021.projekat.service.impl;
 
 import com.example.sr2_2020.svt2021.projekat.controller.CommunityController;
 import com.example.sr2_2020.svt2021.projekat.dto.ReactionDTO;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.model.CommunitySearching;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.repository.CommunitySearchingRepositoryQuery;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.services.CommunitySearchingService;
 import com.example.sr2_2020.svt2021.projekat.exception.CommentNotFoundException;
+import com.example.sr2_2020.svt2021.projekat.exception.CommunityNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.PostNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneException;
 import com.example.sr2_2020.svt2021.projekat.mapper.ReactionMapper;
 import com.example.sr2_2020.svt2021.projekat.model.*;
-import com.example.sr2_2020.svt2021.projekat.repository.CommentRepository;
-import com.example.sr2_2020.svt2021.projekat.repository.PostRepository;
-import com.example.sr2_2020.svt2021.projekat.repository.ReactionRepository;
-import com.example.sr2_2020.svt2021.projekat.repository.UserRepository;
+import com.example.sr2_2020.svt2021.projekat.repository.*;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.ReactionService;
 import lombok.AllArgsConstructor;
@@ -43,6 +44,12 @@ public class ReactionServiceImpl implements ReactionService {
 
     private final CommentRepository commentRepository;
 
+    private final CommunityRepository communityRepository;
+
+    private final CommunitySearchingRepositoryQuery communitySearchingRepositoryQuery;
+
+    private final CommunitySearchingService communitySearchingService;
+
     static final Logger logger = LogManager.getLogger(CommunityController.class);
 
     @Override
@@ -56,6 +63,28 @@ public class ReactionServiceImpl implements ReactionService {
 
         saveReaction(reactionDTO, username);
 
+        updateCommunityIndex(reactionDTO);
+    }
+
+    private void updateCommunityIndex(ReactionDTO reactionDTO) {
+
+        Post post = postRepository.findById(reactionDTO.getPostId()).orElseThrow(() ->
+                new PostNotFoundException("Post not found for specified post id"));
+
+        Community community = communityRepository.findByCommunityIdAndIsSuspended(post.getCommunity().getCommunityId(),
+                false).orElseThrow(() -> new CommunityNotFoundException("Community with id " +
+                post.getCommunity().getCommunityId() + " not found"));
+
+        community.setPosts(postRepository.findPostsByCommunity(community));
+
+        try {
+            communitySearchingRepositoryQuery.update(new CommunitySearching(community.getCommunityId().toString(),
+                    community.getName(), community.getDescription(), community.getPosts().size(),
+                    communitySearchingService.calculateCommunityAverageKarma(community.getPosts()), null),
+                    "communities");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

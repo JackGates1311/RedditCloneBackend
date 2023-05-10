@@ -6,6 +6,7 @@ import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTOResponse;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.model.CommunitySearching;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.repository.CommunitySearchingRepository;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.repository.CommunitySearchingRepositoryQuery;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.services.CommunitySearchingService;
 import com.example.sr2_2020.svt2021.projekat.exception.CommunityNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneException;
 import com.example.sr2_2020.svt2021.projekat.mapper.CommunityMapper;
@@ -58,6 +59,8 @@ public class CommunityServiceImpl implements CommunityService {
 
     private final CommunitySearchingRepositoryQuery communitySearchingRepositoryQuery;
 
+    private final CommunitySearchingService communitySearchingService;
+
     static final Logger logger = LogManager.getLogger(CommunityController.class);
 
     @Override
@@ -91,7 +94,8 @@ public class CommunityServiceImpl implements CommunityService {
 
         try {
             communitySearchingRepository.save(new CommunitySearching(newCommunity.getCommunityId().toString(),
-                    newCommunity.getName(), newCommunity.getDescription(), 0, null));
+                    newCommunity.getName(), newCommunity.getDescription(), 0, 0.0F,
+                    null));
 
             createCommunityPdfDocument(newCommunity);
 
@@ -183,9 +187,20 @@ public class CommunityServiceImpl implements CommunityService {
             communityRepository.save(community);
 
             flairs.forEach(flair -> flair.getCommunities().add(community));
+
+            community.setPosts(postRepository.findPostsByCommunity(community));
+
+            try {
+                communitySearchingRepositoryQuery.update(new CommunitySearching(community.getCommunityId().toString(),
+                                community.getName(), community.getDescription(), community.getPosts().size(),
+                                communitySearchingService.calculateCommunityAverageKarma(community.getPosts()),
+                                null), "communities");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
-        logger.info("LOGGER: " + LocalDateTime.now() + " - Saving community data to database...");
+        logger.info("LOGGER: " + LocalDateTime.now() + " - Saving community data to databases...");
 
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(communityDTORequest);
     }
@@ -219,6 +234,8 @@ public class CommunityServiceImpl implements CommunityService {
         bannedRepository.save(banned);
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Saving community data to database...");
+
+        communitySearchingRepository.deleteById(String.valueOf(community.getCommunityId()));
 
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }

@@ -26,17 +26,17 @@ public class CommunitySearchingRepositoryQuery {
         this.elasticsearchRestTemplate = elasticsearchRestTemplate;
     }
 
-    public void update(CommunitySearching communitySearching) {
+    public void update(CommunitySearching communitySearching, String indexName) {
         IndexQuery indexQuery = new IndexQueryBuilder()
                 .withId(communitySearching.getId())
                 .withObject(communitySearching)
                 .build();
-
-        elasticsearchRestTemplate.index(indexQuery, IndexCoordinates.of("communities"));
+        elasticsearchRestTemplate.index(indexQuery, IndexCoordinates.of(indexName));
     }
 
     public ResponseEntity<List<CommunitySearching>> search(String name, String description, Integer minPosts,
-                                                           Integer maxPosts, Boolean isMust, Boolean isPdfIndex) {
+                                                           Integer maxPosts, Boolean isMust, Boolean isPdfIndex,
+                                                           Float minKarma, Float maxKarma) {
         String indexName;
 
         if(isPdfIndex)
@@ -77,6 +77,21 @@ public class CommunitySearchingRepositoryQuery {
                 boolQuery.must(postCountQuery);
             else
                 boolQuery.should(postCountQuery);
+        }
+
+        if (minKarma != null || maxKarma != null) {
+            QueryBuilder averageKarmaQuery;
+            if (minKarma == null) {
+                averageKarmaQuery = QueryBuilders.rangeQuery("averageKarma").to(maxKarma);
+            } else if (maxKarma == null) {
+                averageKarmaQuery = QueryBuilders.rangeQuery("averageKarma").from(minKarma);
+            } else {
+                averageKarmaQuery = QueryBuilders.rangeQuery("averageKarma").from(minKarma).to(maxKarma);
+            }
+            if(isMust)
+                boolQuery.must(averageKarmaQuery);
+            else
+                boolQuery.should(averageKarmaQuery);
         }
 
         HighlightBuilder highlightBuilder = new HighlightBuilder()
