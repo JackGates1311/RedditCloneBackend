@@ -91,7 +91,9 @@ public class CommunityController {
             @RequestParam(value = "minKarma", required = false) Float minKarma,
             @RequestParam(value = "maxKarma", required = false) Float maxKarma,
             @RequestParam(value = "isMust", required = false) Boolean isMust,
-            @RequestParam(value = "isPdfIndex", required = false) Boolean isPdfIndex
+            @RequestParam(value = "isPdfIndex", required = false) Boolean isPdfIndex,
+            @RequestParam(value = "nameSearchMode", required = false) String nameSearchMode,
+            @RequestParam(value = "descriptionSearchMode", required = false) String descriptionSearchMode
     ) {
 
         if(isMust == null)
@@ -100,7 +102,7 @@ public class CommunityController {
             isPdfIndex = false;
 
         return communitySearchingService.searchCommunities(name, description, minPosts, maxPosts, isMust, isPdfIndex,
-                minKarma, maxKarma);
+                minKarma, maxKarma, nameSearchMode, descriptionSearchMode);
     }
 
     @RequestMapping(value = "/search", method = RequestMethod.POST)
@@ -125,6 +127,6 @@ public class CommunityController {
             isPdfIndex = true;
 
         return communitySearchingService.searchCommunities(null, description, null, null,
-                true, isPdfIndex, null, null);
+                true, isPdfIndex, null, null, null, null);
     }
 }

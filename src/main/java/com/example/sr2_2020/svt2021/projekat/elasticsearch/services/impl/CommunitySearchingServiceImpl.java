@@ -22,9 +22,9 @@ public class CommunitySearchingServiceImpl implements CommunitySearchingService 
     @Override
     public ResponseEntity<List<CommunitySearching>> searchCommunities(
             String name, String description, Integer minPosts, Integer maxPosts, Boolean isMust, Boolean isPdfIndex,
-            Float minKarma, Float maxKarma) {
+            Float minKarma, Float maxKarma, String nameSearchMode, String descriptionSearchMode) {
         return communitySearchingRepositoryQuery.search(name, description, minPosts, maxPosts, isMust, isPdfIndex,
-                minKarma, maxKarma);
+                minKarma, maxKarma, nameSearchMode, descriptionSearchMode);
     }
 
     @Override

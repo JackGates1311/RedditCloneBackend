@@ -3,6 +3,7 @@ package com.example.sr2_2020.svt2021.projekat.elasticsearch.repository;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.model.CommunitySearching;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.parser.PdfTextExtractor;
+import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -36,7 +37,8 @@ public class CommunitySearchingRepositoryQuery {
 
     public ResponseEntity<List<CommunitySearching>> search(String name, String description, Integer minPosts,
                                                            Integer maxPosts, Boolean isMust, Boolean isPdfIndex,
-                                                           Float minKarma, Float maxKarma) {
+                                                           Float minKarma, Float maxKarma, String nameSearchMode,
+                                                           String descriptionSearchMode) {
         String indexName;
 
         if(isPdfIndex)
@@ -47,7 +49,16 @@ public class CommunitySearchingRepositoryQuery {
         BoolQueryBuilder boolQuery = new BoolQueryBuilder();
 
         if (name != null) {
-            QueryBuilder nameQuery = QueryBuilders.queryStringQuery("name: " + name);
+
+            QueryBuilder nameQuery;
+
+            if(Objects.equals(nameSearchMode, "fuzzy")) {
+                nameQuery = QueryBuilders.matchQuery("name", name).fuzziness(Fuzziness.AUTO);
+            } else if (Objects.equals(nameSearchMode, "phrase")) {
+                nameQuery = QueryBuilders.matchPhraseQuery("name", name);
+            } else {
+                nameQuery = QueryBuilders.queryStringQuery("name: " + name);
+            }
 
             if(isMust)
                 boolQuery.must(nameQuery);
@@ -56,7 +67,17 @@ public class CommunitySearchingRepositoryQuery {
         }
 
         if (description != null) {
-            QueryBuilder descriptionQuery = QueryBuilders.queryStringQuery("description: " + description);
+
+            QueryBuilder descriptionQuery;
+
+            if(Objects.equals(descriptionSearchMode, "fuzzy")) {
+                descriptionQuery = QueryBuilders.matchQuery("description", description).
+                        fuzziness(Fuzziness.AUTO);
+            } else if (Objects.equals(descriptionSearchMode, "phrase")) {
+                descriptionQuery = QueryBuilders.matchPhraseQuery("description", description);
+            } else {
+                descriptionQuery = QueryBuilders.queryStringQuery("description: " + description);
+            }
 
             if(isMust)
                 boolQuery.must(descriptionQuery);

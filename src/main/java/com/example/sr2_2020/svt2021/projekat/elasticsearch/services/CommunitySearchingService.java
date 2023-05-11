@@ -11,7 +11,8 @@ import java.util.List;
 public interface CommunitySearchingService {
     ResponseEntity<List<CommunitySearching>> searchCommunities(String name, String description, Integer minPosts,
                                                                Integer maxPosts, Boolean isMust, Boolean isPdfIndex,
-                                                               Float minKarma, Float maxKarma);
+                                                               Float minKarma, Float maxKarma, String nameSearchMode,
+                                                               String descriptionSearchMode);
     String getPdfText(byte[] pdfContent);
 
     Float calculateCommunityAverageKarma(List<Post> communityPosts);
