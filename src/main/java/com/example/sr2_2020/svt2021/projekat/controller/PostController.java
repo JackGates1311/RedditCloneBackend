@@ -2,6 +2,8 @@ package com.example.sr2_2020.svt2021.projekat.controller;
 
 import com.example.sr2_2020.svt2021.projekat.dto.PostRequest;
 import com.example.sr2_2020.svt2021.projekat.dto.PostResponse;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.model.PostSearching;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.services.PostSearchingService;
 import com.example.sr2_2020.svt2021.projekat.service.PostService;
 import lombok.AllArgsConstructor;
 import org.apache.logging.log4j.LogManager;
@@ -9,7 +11,10 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,6 +25,8 @@ public class PostController {
 
     private final PostService postService;
 
+    private final PostSearchingService postSearchingService;
+
     static final Logger logger = LogManager.getLogger(CommunityController.class);
     
     @RequestMapping(value = "/createPost", method = RequestMethod.POST)
@@ -29,9 +36,7 @@ public class PostController {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Create post method has been called");
 
-        postService.save(postRequest, request);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body("Post is successfully created");
+        return postService.save(postRequest, request);
     }
 
     @RequestMapping(value = "/getAllPosts")
@@ -77,4 +82,54 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.OK).body(postService.getPostsByCommunityName(communityName, sortBy));
     }
 
+    @RequestMapping(value = "/search", method = RequestMethod.GET)
+    public ResponseEntity<List<PostSearching>> searchPosts(
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "text", required = false) String text,
+            @RequestParam(value = "minKarma", required = false) Integer minKarma,
+            @RequestParam(value = "maxkarma", required = false) Integer maxKarma,
+            @RequestParam(value = "minComments", required = false) Float minComments,
+            @RequestParam(value = "maxComments", required = false) Float maxComments,
+            @RequestParam(value = "flairs", required = false) String flairs,
+            @RequestParam(value = "isMust", required = false) Boolean isMust,
+            @RequestParam(value = "isPdfIndex", required = false) Boolean isPdfIndex,
+            @RequestParam(value = "titleSearchMode", required = false) String titleSearchMode,
+            @RequestParam(value = "textSearchMode", required = false) String textSearchMode,
+            @RequestParam(value = "flairsSearchMode", required = false) String flairsSearchMode
+    ) {
+
+        if(isMust == null)
+            isMust = true;
+        if(isPdfIndex == null)
+            isPdfIndex = false;
+
+        return postSearchingService.searchPosts(title, text, minKarma, maxKarma, minComments, maxComments,
+                flairs, isMust, isPdfIndex, titleSearchMode, textSearchMode, flairsSearchMode);
+    }
+
+    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    public ResponseEntity<List<PostSearching>> searchPostsByPdfDocument(
+            @RequestParam("file") MultipartFile pdfFile,
+            @RequestParam(value = "isPdfIndex", required = false) Boolean isPdfIndex
+    ) {
+
+        byte[] pdfContent; //TODO refactor it (make it less duplicate)
+
+        try {
+            pdfContent = pdfFile.getBytes();
+        } catch (IOException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        String text = postSearchingService.getPdfText(pdfContent);
+
+        logger.info("Text successfully caught from PDF document: " + text);
+
+        if(isPdfIndex == null)
+            isPdfIndex = true;
+
+        return postSearchingService.searchPosts(null, text, null, null, null,
+                null, null, true, isPdfIndex, null, null,
+                null);
+    }
 }

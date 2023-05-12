@@ -7,6 +7,7 @@ import com.example.sr2_2020.svt2021.projekat.elasticsearch.model.CommunitySearch
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.repository.CommunitySearchingRepository;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.repository.CommunitySearchingRepositoryQuery;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.services.CommunitySearchingService;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.services.PdfService;
 import com.example.sr2_2020.svt2021.projekat.exception.CommunityNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneException;
 import com.example.sr2_2020.svt2021.projekat.mapper.CommunityMapper;
@@ -18,6 +19,7 @@ import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.CommunityService;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfWriter;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.List;
@@ -60,6 +63,8 @@ public class CommunityServiceImpl implements CommunityService {
     private final CommunitySearchingRepositoryQuery communitySearchingRepositoryQuery;
 
     private final CommunitySearchingService communitySearchingService;
+
+    private final PdfService pdfService;
 
     static final Logger logger = LogManager.getLogger(CommunityController.class);
 
@@ -97,7 +102,7 @@ public class CommunityServiceImpl implements CommunityService {
                     newCommunity.getName(), newCommunity.getDescription(), 0, 0.0F,
                     null));
 
-            createCommunityPdfDocument(newCommunity);
+            pdfService.createPdfDocument(newCommunity, null, "communities-pdf");
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(e.toString());
@@ -194,7 +199,7 @@ public class CommunityServiceImpl implements CommunityService {
                 communitySearchingRepositoryQuery.update(new CommunitySearching(community.getCommunityId().toString(),
                                 community.getName(), community.getDescription(), community.getPosts().size(),
                                 communitySearchingService.calculateCommunityAverageKarma(community.getPosts()),
-                                null), "communities");
+                        null), "communities");
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -252,55 +257,5 @@ public class CommunityServiceImpl implements CommunityService {
         logger.info("LOGGER: " + LocalDateTime.now() + " - Saving community data to database...");
 
         return communityMapper.mapCommunityToDTO(community);
-    }
-
-    @Override
-    public void createCommunityPdfDocument(Community community) {
-
-        String pdfDirectory = "documents/";
-
-        File directory = new File(pdfDirectory);
-        if (!directory.exists()) {
-            if(!directory.mkdirs())
-                logger.error("Error while creating directory" + pdfDirectory);
-
-        }
-
-        String filePath = null;
-
-        Document document = new Document();
-
-        try {
-
-            filePath = (pdfDirectory + community.getName() + ".pdf").replaceAll("\\s+", "").
-                    toLowerCase();
-
-            PdfWriter.getInstance(document, new FileOutputStream(filePath));
-
-            document.open();
-            BaseFont baseFont = BaseFont.createFont("src/main/resources/fonts/font.ttf",
-                    BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
-            com.itextpdf.text.Font font = new com.itextpdf.text.Font(baseFont, 12);
-
-            Paragraph nameParagraph = new Paragraph(community.getName(), font);
-            nameParagraph.setSpacingAfter(25f);
-
-            document.add(nameParagraph);
-
-            Paragraph descriptionParagraph = new Paragraph(community.getDescription(), font);
-
-            document.add(descriptionParagraph);
-
-        } catch (DocumentException | IOException e) {
-            e.printStackTrace();
-        } finally {
-            document.close();
-        }
-
-        try {
-            communitySearchingRepositoryQuery.indexPdf(filePath);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

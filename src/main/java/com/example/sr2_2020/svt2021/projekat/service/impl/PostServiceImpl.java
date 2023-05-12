@@ -3,8 +3,13 @@ package com.example.sr2_2020.svt2021.projekat.service.impl;
 import com.example.sr2_2020.svt2021.projekat.controller.CommunityController;
 import com.example.sr2_2020.svt2021.projekat.dto.*;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.model.CommunitySearching;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.model.PostSearching;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.repository.CommunitySearchingRepositoryQuery;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.repository.PostSearchingRepository;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.repository.PostSearchingRepositoryQuery;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.services.CommunitySearchingService;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.services.PdfService;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.services.PostSearchingService;
 import com.example.sr2_2020.svt2021.projekat.exception.CommunityNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.PostNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneException;
@@ -56,13 +61,21 @@ public class PostServiceImpl implements PostService {
 
     private final SortService sortService;
 
+    private final PostSearchingService postSearchingService;
+
+    private final PostSearchingRepositoryQuery postSearchingRepositoryQuery;
+
+    private final PostSearchingRepository postSearchingRepository;
+
     private final CommunitySearchingRepositoryQuery communitySearchingRepositoryQuery;
+
+    private final PdfService pdfService;
 
     private final CommunitySearchingService communitySearchingService;
 
     static final Logger logger = LogManager.getLogger(CommunityController.class);
     @Override
-    public void save(PostRequest postRequest, HttpServletRequest request) {
+    public ResponseEntity<String> save(PostRequest postRequest, HttpServletRequest request) {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Getting data for saving post ...");
 
@@ -109,13 +122,22 @@ public class PostServiceImpl implements PostService {
         community.setPosts(postRepository.findPostsByCommunity(community));
 
         try {
+            postSearchingRepository.save(new PostSearching(post.getPostId().toString(), post.getTitle(),
+                            post.getText(), 0, post.getReactionCount(), null,
+                            post.getFlair()));
+
             communitySearchingRepositoryQuery.update(new CommunitySearching(community.getCommunityId().toString(),
                     community.getName(), community.getDescription(), community.getPosts().size(),
-                    communitySearchingService.calculateCommunityAverageKarma(community.getPosts()), null),
-                    "communities");
+                    communitySearchingService.calculateCommunityAverageKarma(community.getPosts()),
+                    null), "communities");
+
+            pdfService.createPdfDocument(null, post, "posts-pdf");
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body("Post is successfully created");
     }
 
     @Override
@@ -196,6 +218,14 @@ public class PostServiceImpl implements PostService {
 
             logger.info("LOGGER: " + LocalDateTime.now() + " - Saving post data to database...");
 
+            try {
+                postSearchingRepositoryQuery.update(new PostSearching(post.getPostId().toString(), post.getTitle(),
+                        post.getText(), postSearchingService.getCommentsCount(post), post.getReactionCount(),
+                        post.getFlair().toString(), post.getFlair()), "posts");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(postRequest);
 
         } else {
@@ -221,6 +251,19 @@ public class PostServiceImpl implements PostService {
 
             postRepository.deleteById(id);
 
+            postSearchingRepository.deleteById(String.valueOf(postResponse.getPostId()));
+
+            Community community = communityRepository.findByNameAndIsSuspended(postResponse.getCommunityName(),
+                    false).orElseThrow(() -> new CommunityNotFoundException("Community with name " +
+                    postResponse.getCommunityName() + " not found"));
+
+            community.setPosts(postRepository.findPostsByCommunity(community));
+
+            communitySearchingRepositoryQuery.update(new CommunitySearching(community.getCommunityId().toString(),
+                    community.getName(), community.getDescription(), community.getPosts().size(),
+                    communitySearchingService.calculateCommunityAverageKarma(community.getPosts()),
+                    null), "communities");
+
             return new ResponseEntity<>("Post has been deleted successfully", HttpStatus.ACCEPTED);
 
         } else {
@@ -229,9 +272,6 @@ public class PostServiceImpl implements PostService {
 
             return new ResponseEntity<>("You don't have permissions to delete this post", HttpStatus.FORBIDDEN);
         }
-
-
-        //return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
     @Override

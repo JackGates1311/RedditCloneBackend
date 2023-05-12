@@ -2,15 +2,18 @@ package com.example.sr2_2020.svt2021.projekat.service;
 
 import com.example.sr2_2020.svt2021.projekat.dto.PostRequest;
 import com.example.sr2_2020.svt2021.projekat.dto.PostResponse;
+import com.example.sr2_2020.svt2021.projekat.model.Post;
 import org.springframework.http.ResponseEntity;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
+import java.io.IOException;
+import java.lang.reflect.InaccessibleObjectException;
 import java.util.List;
 
 public interface PostService {
 
     @Transactional
-    void save(PostRequest postRequest, HttpServletRequest request);
+    ResponseEntity<String> save(PostRequest postRequest, HttpServletRequest request);
 
     @Transactional
     List<PostResponse> getAllPosts(String sortBy);

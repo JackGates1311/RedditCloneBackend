@@ -29,5 +29,5 @@ public interface CommunityService {
     @Transactional
     CommunityDTOResponse getCommunityByName(String name);
 
-    void createCommunityPdfDocument(Community community) throws IOException;
+    //void createCommunityPdfDocument(Community community) throws IOException;
 }

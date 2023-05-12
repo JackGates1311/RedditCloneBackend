@@ -139,36 +139,4 @@ public class CommunitySearchingRepositoryQuery {
 
         return new ResponseEntity<>(communities, HttpStatus.OK);
     }
-
-    public void indexPdf(String pdfFilePath) throws IOException {
-
-        File pdfFile = new File(pdfFilePath);
-
-        byte[] pdfContent = Files.readAllBytes(pdfFile.toPath());
-
-        PdfReader pdfReader = new PdfReader(pdfContent);
-
-        StringBuilder pdfText = getPdfText(pdfReader);
-
-        Map<String, Object> pdfDocument = new HashMap<>();
-        pdfDocument.put("id", UUID.randomUUID().toString());
-        pdfDocument.put("name", pdfText.toString().split("\r?\n")[0]);
-        pdfDocument.put("description", pdfText.toString());
-
-        IndexQuery indexQuery = new IndexQueryBuilder().withObject(pdfDocument).build();
-        elasticsearchRestTemplate.index(indexQuery, IndexCoordinates.of("communities-pdf"));
-
-        pdfReader.close();
-    }
-
-    public StringBuilder getPdfText(PdfReader pdfReader) throws IOException {
-        int pages = pdfReader.getNumberOfPages();
-
-        StringBuilder pdfText = new StringBuilder();
-
-        for (int i = 1; i <= pages; i++) {
-            pdfText.append(PdfTextExtractor.getTextFromPage(pdfReader, i));
-        }
-        return pdfText;
-    }
 }

@@ -1,6 +1,7 @@
 package com.example.sr2_2020.svt2021.projekat.elasticsearch;
 
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.repository.CommunitySearchingRepositoryQuery;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.repository.PostSearchingRepositoryQuery;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -39,5 +40,11 @@ public class ElasticsearchConfig {
     public CommunitySearchingRepositoryQuery communitySearchingRepositoryQuery(
             ElasticsearchOperations elasticsearchOperations, ElasticsearchRestTemplate elasticsearchTemplate) {
         return new CommunitySearchingRepositoryQuery(elasticsearchOperations, elasticsearchTemplate);
+    }
+
+    @Bean
+    public PostSearchingRepositoryQuery postSearchingRepositoryQuery(
+            ElasticsearchOperations elasticsearchOperations, ElasticsearchRestTemplate elasticsearchTemplate) {
+        return new PostSearchingRepositoryQuery(elasticsearchOperations, elasticsearchTemplate);
     }
 }

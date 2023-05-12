@@ -69,7 +69,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 antMatchers("/api/auth/**", "/api/posts/getAllPosts", "/api/communities/name={name}",
                         "/api/posts/communityName={communityName}", "/api/communities/getAllCommunities",
                         "/api/posts/{id}", "/api/comments/getPostComments/{id}", "/api/comments/{id}",
-                        "/api/file/{filename}", "/api/communities/search").permitAll().anyRequest().authenticated();
+                        "/api/file/{filename}", "/api/communities/search", "/api/posts/search").permitAll().
+                anyRequest().authenticated();
 
         httpSecurity.addFilterBefore(authTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
     }
