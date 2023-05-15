@@ -21,5 +21,4 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
 
     @Transactional
     void deleteByPostPostId(Long postId);
-
 }

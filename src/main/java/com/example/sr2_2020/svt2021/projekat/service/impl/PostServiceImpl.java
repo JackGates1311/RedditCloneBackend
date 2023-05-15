@@ -250,6 +250,8 @@ public class PostServiceImpl implements PostService {
 
             reactionRepository.deleteByPostPostId(id);
 
+            commentRepository.deleteByPostPostId(postResponse.getPostId());
+
             postRepository.deleteById(id);
 
             postSearchingRepository.deleteById(String.valueOf(postResponse.getPostId()));

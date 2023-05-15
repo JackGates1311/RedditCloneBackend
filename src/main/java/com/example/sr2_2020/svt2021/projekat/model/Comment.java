@@ -9,6 +9,8 @@ import org.hibernate.annotations.LazyToOneOption;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -50,6 +52,9 @@ public class Comment {
     private User user;
 
     private Integer reactionCount;
+
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Reaction> reactions = new ArrayList<>();
 
     @Override
     public boolean equals(Object o) {
