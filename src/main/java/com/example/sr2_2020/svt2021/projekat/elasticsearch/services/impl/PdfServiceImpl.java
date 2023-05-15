@@ -17,6 +17,8 @@ import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.IndexQuery;
 import org.springframework.data.elasticsearch.core.query.IndexQueryBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -82,7 +84,7 @@ public class PdfServiceImpl implements PdfService {
     }
 
     @Override
-    public Boolean createPdfDocument(Community community, Post post, String indexName)
+    public void createPdfDocument(Community community, Post post, String indexName)
     {
         String pdfDirectory = "documents/";
 
@@ -90,7 +92,7 @@ public class PdfServiceImpl implements PdfService {
         if (!directory.exists()) {
             if(!directory.mkdirs()) {
                 logger.error("Error while creating directory" + pdfDirectory);
-                return false;
+                return;
             }
         }
 
@@ -136,7 +138,7 @@ public class PdfServiceImpl implements PdfService {
 
         } catch (DocumentException | IOException e) {
             e.printStackTrace();
-            return false;
+            return;
         } finally {
             document.close();
         }
@@ -157,6 +159,19 @@ public class PdfServiceImpl implements PdfService {
             }
         }
 
-        return true;
+    }
+
+    @Override
+    public byte[] getPdfContent(MultipartFile pdfFile) {
+
+        byte[] pdfContent = new byte[0];
+
+        try {
+            pdfContent = pdfFile.getBytes();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return pdfContent;
     }
 }

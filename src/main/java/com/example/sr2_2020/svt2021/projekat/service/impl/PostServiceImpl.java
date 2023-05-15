@@ -124,7 +124,7 @@ public class PostServiceImpl implements PostService {
         try {
             postSearchingRepository.save(new PostSearching(post.getPostId().toString(), post.getTitle(),
                             post.getText(), 0, post.getReactionCount(), null,
-                            post.getFlair()));
+                    postRequest.getFlairs()));
 
             communitySearchingRepositoryQuery.update(new CommunitySearching(community.getCommunityId().toString(),
                     community.getName(), community.getDescription(), community.getPosts().size(),
@@ -221,7 +221,8 @@ public class PostServiceImpl implements PostService {
             try {
                 postSearchingRepositoryQuery.update(new PostSearching(post.getPostId().toString(), post.getTitle(),
                         post.getText(), postSearchingService.getCommentsCount(post), post.getReactionCount(),
-                        post.getFlair().toString(), post.getFlair()), "posts");
+                        null, post.getFlair().stream().map(Flair::getName).collect(Collectors.toList())),
+                        "posts");
             } catch (Exception e) {
                 e.printStackTrace();
             }

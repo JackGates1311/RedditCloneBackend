@@ -3,6 +3,7 @@ package com.example.sr2_2020.svt2021.projekat.controller;
 import com.example.sr2_2020.svt2021.projekat.dto.PostRequest;
 import com.example.sr2_2020.svt2021.projekat.dto.PostResponse;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.model.PostSearching;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.services.PdfService;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.services.PostSearchingService;
 import com.example.sr2_2020.svt2021.projekat.service.PostService;
 import lombok.AllArgsConstructor;
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,6 +26,8 @@ public class PostController {
     private final PostService postService;
 
     private final PostSearchingService postSearchingService;
+
+    private final PdfService pdfService;
 
     static final Logger logger = LogManager.getLogger(CommunityController.class);
     
@@ -87,7 +89,7 @@ public class PostController {
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "text", required = false) String text,
             @RequestParam(value = "minKarma", required = false) Integer minKarma,
-            @RequestParam(value = "maxkarma", required = false) Integer maxKarma,
+            @RequestParam(value = "maxKarma", required = false) Integer maxKarma,
             @RequestParam(value = "minComments", required = false) Float minComments,
             @RequestParam(value = "maxComments", required = false) Float maxComments,
             @RequestParam(value = "flairs", required = false) String flairs,
@@ -113,15 +115,7 @@ public class PostController {
             @RequestParam(value = "isPdfIndex", required = false) Boolean isPdfIndex
     ) {
 
-        byte[] pdfContent; //TODO refactor it (make it less duplicate)
-
-        try {
-            pdfContent = pdfFile.getBytes();
-        } catch (IOException e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        String text = postSearchingService.getPdfText(pdfContent);
+        String text = postSearchingService.getPdfText(pdfService.getPdfContent(pdfFile));
 
         logger.info("Text successfully caught from PDF document: " + text);
 

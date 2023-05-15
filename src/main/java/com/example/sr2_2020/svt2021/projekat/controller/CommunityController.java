@@ -4,6 +4,7 @@ import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTORequest;
 import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTOResponse;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.model.CommunitySearching;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.services.CommunitySearchingService;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.services.PdfService;
 import com.example.sr2_2020.svt2021.projekat.service.CommunityService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,8 @@ public class CommunityController {
     private final CommunityService communityService;
 
     private final CommunitySearchingService communitySearchingService;
+
+    private final PdfService pdfService;
 
     static final Logger logger = LogManager.getLogger(CommunityController.class);
 
@@ -111,15 +114,7 @@ public class CommunityController {
             @RequestParam(value = "isPdfIndex", required = false) Boolean isPdfIndex
     ) {
 
-        byte[] pdfContent;
-
-        try {
-            pdfContent = pdfFile.getBytes();
-        } catch (IOException e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        String description = communitySearchingService.getPdfText(pdfContent);
+        String description = communitySearchingService.getPdfText(pdfService.getPdfContent(pdfFile));
 
         logger.info("Text successfully caught from PDF document: " + description);
 

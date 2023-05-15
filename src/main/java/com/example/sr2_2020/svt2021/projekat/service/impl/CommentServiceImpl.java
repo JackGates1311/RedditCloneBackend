@@ -4,15 +4,15 @@ import com.example.sr2_2020.svt2021.projekat.controller.CommunityController;
 import com.example.sr2_2020.svt2021.projekat.dto.CommentDTORequest;
 import com.example.sr2_2020.svt2021.projekat.dto.CommentDTOResponse;
 import com.example.sr2_2020.svt2021.projekat.dto.ReactionDTO;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.model.PostSearching;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.repository.PostSearchingRepositoryQuery;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.services.PostSearchingService;
 import com.example.sr2_2020.svt2021.projekat.exception.CommentNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.PostNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.SpringRedditCloneException;
 import com.example.sr2_2020.svt2021.projekat.mapper.CommentMapper;
 import com.example.sr2_2020.svt2021.projekat.mapper.ReactionMapper;
-import com.example.sr2_2020.svt2021.projekat.model.Comment;
-import com.example.sr2_2020.svt2021.projekat.model.Post;
-import com.example.sr2_2020.svt2021.projekat.model.ReactionType;
-import com.example.sr2_2020.svt2021.projekat.model.User;
+import com.example.sr2_2020.svt2021.projekat.model.*;
 import com.example.sr2_2020.svt2021.projekat.repository.CommentRepository;
 import com.example.sr2_2020.svt2021.projekat.repository.PostRepository;
 import com.example.sr2_2020.svt2021.projekat.repository.ReactionRepository;
@@ -52,6 +52,10 @@ public class CommentServiceImpl implements CommentService {
     private final ReactionRepository reactionRepository;
 
     private final  ReactionMapper reactionMapper;
+
+    private final PostSearchingRepositoryQuery postSearchingRepositoryQuery;
+
+    private final PostSearchingService postSearchingService;
 
     static final Logger logger = LogManager.getLogger(CommunityController.class);
 
@@ -113,6 +117,11 @@ public class CommentServiceImpl implements CommentService {
         reactionDTO.setReactionType(ReactionType.UPVOTE);
 
         reactionRepository.save(reactionMapper.mapDTOToReaction(reactionDTO, null, user, reactionComment));
+
+        postSearchingRepositoryQuery.update(new PostSearching(post.getPostId().toString(), post.getTitle(),
+                post.getText(), postSearchingService.getCommentsCount(post), post.getReactionCount(),
+                null, post.getFlair().stream().map(Flair::getName).collect(Collectors.toList())),
+                "posts");
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - saving comment to database");
 
@@ -380,6 +389,14 @@ public class CommentServiceImpl implements CommentService {
 
             commentRepository.save(comment);
         }
+
+        Post post = postRepository.findById(comments.get(0).getPost().getPostId()).orElseThrow(() ->
+                new PostNotFoundException("Post not found for specified post id"));
+
+        postSearchingRepositoryQuery.update(new PostSearching(post.getPostId().toString(), post.getTitle(),
+                post.getText(), postSearchingService.getCommentsCount(post), post.getReactionCount(),
+                null, post.getFlair().stream().map(Flair::getName).collect(Collectors.toList())),
+                "posts");
 
         //
     }
