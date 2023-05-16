@@ -141,7 +141,7 @@ public class PostSearchingRepositoryQuery {
         }
 
         HighlightBuilder highlightBuilder = new HighlightBuilder()
-                .field("title").field("text").field("description.highlighted");
+                .field("title").field("text").field("flairs").field("description.highlighted");
 
         SearchHits<PostSearching> searchHits = elasticsearchOperations.search(
                 new NativeSearchQueryBuilder().withQuery(boolQuery).withHighlightBuilder(highlightBuilder).build(),
@@ -152,6 +152,10 @@ public class PostSearchingRepositoryQuery {
         searchHits.forEach(hit -> {
             PostSearching post = hit.getContent();
             Map<String, List<String>> highlightFields = hit.getHighlightFields();
+            if (highlightFields.containsKey("flairs")) {
+                List<String> highlightedDescriptions = highlightFields.get("flairs");
+                post.setHighlighterText(highlightedDescriptions.get(0));
+            }
             if (highlightFields.containsKey("title")) {
                 post.setHighlighterText(highlightFields.get("title").get(0));
             }
