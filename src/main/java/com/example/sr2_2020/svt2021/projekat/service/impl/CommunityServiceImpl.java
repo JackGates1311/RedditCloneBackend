@@ -6,6 +6,7 @@ import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTOResponse;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.model.CommunitySearching;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.repository.CommunitySearchingRepository;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.repository.CommunitySearchingRepositoryQuery;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.repository.PostSearchingRepository;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.services.CommunitySearchingService;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.services.PdfService;
 import com.example.sr2_2020.svt2021.projekat.exception.CommunityNotFoundException;
@@ -14,13 +15,10 @@ import com.example.sr2_2020.svt2021.projekat.mapper.CommunityMapper;
 import com.example.sr2_2020.svt2021.projekat.model.Banned;
 import com.example.sr2_2020.svt2021.projekat.model.Community;
 import com.example.sr2_2020.svt2021.projekat.model.Flair;
+import com.example.sr2_2020.svt2021.projekat.model.Post;
 import com.example.sr2_2020.svt2021.projekat.repository.*;
 import com.example.sr2_2020.svt2021.projekat.security.TokenUtils;
 import com.example.sr2_2020.svt2021.projekat.service.CommunityService;
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.BaseFont;
-import com.itextpdf.text.pdf.PdfReader;
-import com.itextpdf.text.pdf.PdfWriter;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
@@ -29,10 +27,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.List;
@@ -61,6 +55,8 @@ public class CommunityServiceImpl implements CommunityService {
     private final CommunitySearchingRepository communitySearchingRepository;
 
     private final CommunitySearchingRepositoryQuery communitySearchingRepositoryQuery;
+
+    private final PostSearchingRepository postSearchingRepository;
 
     private final CommunitySearchingService communitySearchingService;
 
@@ -119,8 +115,15 @@ public class CommunityServiceImpl implements CommunityService {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Getting all communities in database");
 
-        return communityRepository.findCommunitiesByIsSuspended(false).stream().map(
-                communityMapper::mapCommunityToDTO).collect(toList());
+        List<CommunityDTOResponse> list = new ArrayList<>();
+
+        for (Community community : communityRepository.findCommunitiesByIsSuspended(false)) {
+            community.setPosts(postRepository.findPostsByCommunity(community));
+            CommunityDTOResponse communityDTOResponse = communityMapper.mapCommunityToDTO(community);
+            list.add(communityDTOResponse);
+        }
+
+        return list;
     }
 
     @Override
@@ -128,9 +131,10 @@ public class CommunityServiceImpl implements CommunityService {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Getting community by ID in database");
 
-
         Community community = communityRepository.findByCommunityIdAndIsSuspended(id, false).
                 orElseThrow(() -> new SpringRedditCloneException("Community not found with entered ID"));
+
+        community.setPosts(postRepository.findPostsByCommunity(community));
 
         return communityMapper.mapCommunityToDTO(community);
     }
@@ -221,6 +225,8 @@ public class CommunityServiceImpl implements CommunityService {
         Community community = communityRepository.findById(id).orElseThrow(() -> new SpringRedditCloneException("" +
                 "Community not found with entered ID"));
 
+        community.setPosts(postRepository.findPostsByCommunity(community));
+
         community.setIsSuspended(true);
         community.setSuspendedReason(communityDTORequest.getSuspendedReason());
         community.setFlair(null);
@@ -241,6 +247,10 @@ public class CommunityServiceImpl implements CommunityService {
         logger.info("LOGGER: " + LocalDateTime.now() + " - Saving community data to database...");
 
         communitySearchingRepository.deleteById(String.valueOf(community.getCommunityId()));
+
+        for(Post post : community.getPosts()) {
+            postSearchingRepository.deleteById(String.valueOf(post.getPostId()));
+        }
 
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }

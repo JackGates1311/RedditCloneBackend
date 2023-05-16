@@ -11,10 +11,7 @@ import org.apache.logging.log4j.Logger;
 import com.example.sr2_2020.svt2021.projekat.dto.CommunityDTOResponse.CommunityDTOResponseBuilder;
 import com.example.sr2_2020.svt2021.projekat.model.Community.CommunityBuilder;
 import org.springframework.stereotype.Component;
-
-import java.lang.reflect.Array;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -46,6 +43,7 @@ public class CommunityMapperImpl implements CommunityMapper {
         communityDTO.suspendedReason(community.getSuspendedReason());
         communityDTO.flairs(community.getFlair().stream().
                 map(Flair::getName).collect(Collectors.toList()));
+        communityDTO.numberOfPosts(community.getPosts().size());
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - New community has been successfully mapped to DTO");
 
