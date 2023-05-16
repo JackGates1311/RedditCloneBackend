@@ -335,7 +335,24 @@ public class CommentServiceImpl implements CommentService {
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Comments are successfully removed ...");
 
+        updateIndexes(id);
+
         return ResponseEntity.status(HttpStatus.ACCEPTED).body("Comment has been successfully deleted");
+
+    }
+
+    private void updateIndexes(Long id) {
+
+        Comment comment = commentRepository.findById(id).orElseThrow(() ->
+                new CommentNotFoundException("Comment not found for specified post id"));
+
+        Post post = postRepository.findById(comment.getPost().getPostId()).orElseThrow(() ->
+                new PostNotFoundException("Post not found for specified post id"));
+
+        postSearchingRepositoryQuery.update(new PostSearching(post.getPostId().toString(), post.getTitle(),
+                        post.getText(), postSearchingService.getCommentsCount(post), post.getReactionCount(),
+                        null, post.getFlair().stream().map(Flair::getName).collect(Collectors.toList())),
+                "posts");
 
     }
 
@@ -389,14 +406,6 @@ public class CommentServiceImpl implements CommentService {
 
             commentRepository.save(comment);
         }
-
-        Post post = postRepository.findById(comments.get(0).getPost().getPostId()).orElseThrow(() ->
-                new PostNotFoundException("Post not found for specified post id"));
-
-        postSearchingRepositoryQuery.update(new PostSearching(post.getPostId().toString(), post.getTitle(),
-                post.getText(), postSearchingService.getCommentsCount(post), post.getReactionCount(),
-                null, post.getFlair().stream().map(Flair::getName).collect(Collectors.toList())),
-                "posts");
 
         //
     }

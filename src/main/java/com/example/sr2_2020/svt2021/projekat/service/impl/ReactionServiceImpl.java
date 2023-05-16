@@ -3,8 +3,11 @@ package com.example.sr2_2020.svt2021.projekat.service.impl;
 import com.example.sr2_2020.svt2021.projekat.controller.CommunityController;
 import com.example.sr2_2020.svt2021.projekat.dto.ReactionDTO;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.model.CommunitySearching;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.model.PostSearching;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.repository.CommunitySearchingRepositoryQuery;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.repository.PostSearchingRepositoryQuery;
 import com.example.sr2_2020.svt2021.projekat.elasticsearch.services.CommunitySearchingService;
+import com.example.sr2_2020.svt2021.projekat.elasticsearch.services.PostSearchingService;
 import com.example.sr2_2020.svt2021.projekat.exception.CommentNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.CommunityNotFoundException;
 import com.example.sr2_2020.svt2021.projekat.exception.PostNotFoundException;
@@ -48,6 +51,10 @@ public class ReactionServiceImpl implements ReactionService {
 
     private final CommunitySearchingRepositoryQuery communitySearchingRepositoryQuery;
 
+    private final PostSearchingRepositoryQuery postSearchingRepositoryQuery;
+
+    private final PostSearchingService postSearchingService;
+
     private final CommunitySearchingService communitySearchingService;
 
     static final Logger logger = LogManager.getLogger(CommunityController.class);
@@ -63,10 +70,10 @@ public class ReactionServiceImpl implements ReactionService {
 
         saveReaction(reactionDTO, username);
 
-        updateCommunityIndex(reactionDTO);
+        updateIndexes(reactionDTO);
     }
 
-    private void updateCommunityIndex(ReactionDTO reactionDTO) {
+    private void updateIndexes(ReactionDTO reactionDTO) {
 
         Post post = postRepository.findById(reactionDTO.getPostId()).orElseThrow(() ->
                 new PostNotFoundException("Post not found for specified post id"));
@@ -82,6 +89,11 @@ public class ReactionServiceImpl implements ReactionService {
                     community.getName(), community.getDescription(), community.getPosts().size(),
                     communitySearchingService.calculateCommunityAverageKarma(community.getPosts()), null),
                     "communities");
+
+            postSearchingRepositoryQuery.update(new PostSearching(post.getPostId().toString(), post.getTitle(),
+                            post.getText(), postSearchingService.getCommentsCount(post), post.getReactionCount(),
+                            null, post.getFlair().stream().map(Flair::getName).collect(
+                                    Collectors.toList())), "posts");
         } catch (Exception e) {
             e.printStackTrace();
         }
