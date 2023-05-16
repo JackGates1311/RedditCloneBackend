@@ -70,7 +70,9 @@ public class ReactionServiceImpl implements ReactionService {
 
         saveReaction(reactionDTO, username);
 
-        updateIndexes(reactionDTO);
+        if(reactionDTO.getPostId() != null) {
+            updateIndexes(reactionDTO);
+        }
     }
 
     private void updateIndexes(ReactionDTO reactionDTO) {

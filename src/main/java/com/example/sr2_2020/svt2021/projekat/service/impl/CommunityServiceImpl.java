@@ -263,6 +263,7 @@ public class CommunityServiceImpl implements CommunityService {
         Community community = communityRepository.findByNameAndIsSuspended(name, false).
                 orElseThrow(() -> new SpringRedditCloneException("Community not found with entered name"));
 
+        community.setPosts(postRepository.findPostsByCommunity(community));
 
         logger.info("LOGGER: " + LocalDateTime.now() + " - Saving community data to database...");
 
