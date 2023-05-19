@@ -137,7 +137,8 @@ public class PostServiceImpl implements PostService {
             e.printStackTrace();
         }
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("Post is successfully created");
+        return ResponseEntity.status(HttpStatus.CREATED).body("Post is successfully created with id: " +
+                post.getPostId().toString());
     }
 
     @Override
