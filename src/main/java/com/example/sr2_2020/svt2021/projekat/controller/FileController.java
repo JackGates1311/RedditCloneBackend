@@ -49,7 +49,8 @@ public class FileController {
     }
 
     @RequestMapping(value = "/delete/{filename}", method = RequestMethod.DELETE)
-    public ResponseEntity<FileResponse> deleteFile(@PathVariable("filename") String filename) throws IOException {
-        return fileService.deleteFile(savePath, filename);
+    public ResponseEntity<FileResponse> deleteFile(@PathVariable("filename") String filename,
+                                                   HttpServletRequest request) throws IOException {
+        return fileService.deleteFile(savePath, filename, request);
     }
 }

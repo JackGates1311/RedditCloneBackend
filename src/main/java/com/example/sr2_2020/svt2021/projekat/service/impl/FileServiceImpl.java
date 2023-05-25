@@ -103,7 +103,8 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public ResponseEntity<FileResponse> replaceFile(String savePath, MultipartFile[] multipartFiles, HttpServletRequest request) throws IOException {
+    public ResponseEntity<FileResponse> replaceFile(String savePath, MultipartFile[] multipartFiles,
+                                                    HttpServletRequest request) throws IOException {
 
         if(multipartFiles.length > 1) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new FileResponse(null,
@@ -131,14 +132,36 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public ResponseEntity<FileResponse> deleteFile(String savePath, String filename) throws IOException {
+    public ResponseEntity<FileResponse> deleteFile(String savePath, String filename, HttpServletRequest request)
+            throws IOException {
 
         var fileForDelete = fileRepository.findByFilename(filename).orElseThrow(() -> new
                 FileNotFoundException("File " + filename + " not found"));
 
-        removeFile(savePath, fileForDelete);
+        String username = tokenUtils.getUsernameFromToken(tokenUtils.getToken(request));
 
-        fileRepository.delete(fileForDelete);
+        if(Objects.equals(fileForDelete.getUser(), null)) {
+
+            Post post = postRepository.findById(fileForDelete.getPost().getPostId()).orElseThrow(() ->
+                    new PostNotFoundException(fileForDelete.getPost().getPostId().toString()));
+
+            if(Objects.equals(post.getUser().getUsername(), username)) {
+                removeFile(savePath, fileForDelete);
+                fileRepository.delete(fileForDelete);
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new FileResponse(filename,
+                        "You don't have right permissions to remove this image!"));
+            }
+
+        } else {
+            if(Objects.equals(fileForDelete.getUser().getUsername(), username)) {
+                removeFile(savePath, fileForDelete);
+                fileRepository.delete(fileForDelete);
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new FileResponse(filename,
+                        "You don't have right permissions to remove this image!"));
+            }
+        }
 
         return ResponseEntity.status(HttpStatus.OK).body(new FileResponse(filename,
                 "Image has been successfully deleted from server"));

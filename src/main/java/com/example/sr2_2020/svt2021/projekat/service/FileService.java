@@ -8,7 +8,6 @@ import javax.transaction.Transactional;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Optional;
 
 public interface FileService {
 
@@ -22,5 +21,5 @@ public interface FileService {
     ResponseEntity<FileResponse> replaceFile(String savePath, MultipartFile[] multipartFiles,
                                              HttpServletRequest request) throws IOException;
     @Transactional
-    ResponseEntity<FileResponse> deleteFile(String savePath, String filename) throws IOException;
+    ResponseEntity<FileResponse> deleteFile(String savePath, String filename, HttpServletRequest request) throws IOException;
 }
